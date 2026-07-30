@@ -1,0 +1,14 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
+PROHIBITED_BRANCHES=("prod" "dev" "main")
+
+for prohibited_branch in "${PROHIBITED_BRANCHES[@]}"; do
+  if [[ "$BRANCH_NAME" == "$prohibited_branch" ]]; then
+    echo "❌ Direct commits to '$prohibited_branch' is not allowed."
+    exit 1
+  fi
+done
+
+exit 0

@@ -1,0 +1,22 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+COMMIT_MSG_FILE=$1
+COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+
+if ! echo "$COMMIT_MSG" | grep -qE '^(feat|chore|Ui|sync|refactor|fix|update|husky)(\([a-zA-Z0-9_-]+\))? ?: (\(wip\) )?.+'; then
+  echo "❌ Commit message does not follow the convention."
+  echo "   Expected : <type>(<scope>): <description>"
+  echo "   With WIP  : <type>(<scope>): (wip) <description>"
+  echo ""
+  echo "   Examples:"
+  echo "   feat: add login screen"
+  echo "   feat(auth): add login screen"
+  echo "   feat(wip): add login screen"
+  echo "   feat(wip) : add login screen"
+  echo "   feat: (wip) add login screen"
+  echo "   fix(nav): (wip) broken navigation"
+  exit 1
+fi
+
+exit 0

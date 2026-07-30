@@ -63,6 +63,55 @@ To learn more, visit https://bloclibrary.dev/lint/
 
 ---
 
+## Git Hooks (Husky) 
+
+This project uses the Dart [husky](https://pub.dev/packages/husky) package to manage Git hooks. Hooks live in the `.husky/` directory and are committed to the repository so every developer shares the same checks.
+
+### Hooks in this project
+
+| Hook | Purpose |
+| --- | --- |
+| `commit-msg` | Enforces the commit message convention `<type>(<scope>): <description>` (e.g. `feat: add login screen`, `fix(nav): (wip) broken navigation`). |
+| `pre-commit` | Blocks direct commits to protected branches (`main`, `dev`, `prod`). |
+| `pre-push` | Runs `dart format .` and `dart fix --apply`, then auto-commits any resulting changes before the push continues. |
+
+### Setup for new developers
+
+> **Note:** This repo's `.git` directory lives one level above `staffly/` (at the repository root), while `pubspec.yaml` lives inside `staffly/`. Husky's own `dart run husky install` command requires `.git` and `pubspec.yaml` to be in the *same* directory, so it cannot be used here — it will fail with `.git can't be found.` if run from `staffly/`, or `Found no pubspec.yaml file` if run from the repo root. Instead, wire up the hooks with a single `git config` command, run once per clone from the **repository root** (the parent of `staffly/`):
+
+```sh
+$ flutter pub get         # from staffly/, installs dependencies
+$ git config core.hooksPath staffly/.husky   # from the repo root
+```
+
+This points Git's `core.hooksPath` directly at `staffly/.husky/`, so the versioned hooks take effect for your local clone. You only need to run it once per clone; verify it with `git config --get core.hooksPath`.
+
+#### Platform notes
+
+- **macOS / Linux**: No extra setup needed. If a hook fails to run with a "permission denied" error, re-add the executable bit:
+
+  ```sh
+  $ chmod +x staffly/.husky/commit-msg staffly/.husky/pre-commit staffly/.husky/pre-push
+  ```
+
+- **Windows**: Works out of the box with [Git for Windows](https://git-scm.com/download/win), which ships the `sh` shell used to run the hook scripts. No `chmod` step is required. If you're using WSL, follow the macOS/Linux instructions above instead.
+
+### Bypassing hooks
+
+Not recommended, but if you need to skip `commit-msg`/`pre-commit` for a single commit:
+
+```sh
+$ git commit -m "..." --no-verify
+```
+
+`pre-push` doesn't support `--no-verify`, so use the `HUSKY` environment variable instead:
+
+```sh
+$ HUSKY=0 git push
+```
+
+---
+
 ## Working with Translations 🌐
 
 This project follows the [official internationalization guide for Flutter][internationalization_link] using [ARB files][arb_documentation_link] for translations.
