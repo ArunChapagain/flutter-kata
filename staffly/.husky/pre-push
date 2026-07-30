@@ -1,0 +1,17 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "▶ Running dart format..."
+dart format .
+
+echo "▶ Running dart fix --apply..."
+dart fix --apply
+
+git add -u
+
+if ! git diff-index --quiet HEAD --; then
+  git commit -m "fix(husky): run dart format and dart fix"
+fi
+
+echo "✅ All checks passed."
+exit 0
