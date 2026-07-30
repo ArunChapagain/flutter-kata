@@ -21,6 +21,7 @@ jobs:
     with:
       flutter_version: "3.44.x"
       run_bloc_lint: true
+      working_directory: staffly
 
   spell-check:
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/spell_check.yml@v1
