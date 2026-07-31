@@ -9,8 +9,17 @@ class _MockDatabaseFactory extends Mock implements DatabaseFactory {}
 
 void main() {
   group(SqliteEmployeeApi, () {
+    const record = EmployeeRecord(
+      id: 'e1b9f0c4',
+      fullName: 'Arun Chapagai',
+      jobTitle: 'Software Engineer',
+      country: 'Nepal',
+      salaryMinorUnits: 5000050,
+    );
+
     late DatabaseFactory databaseFactory;
     late Database database;
+    late SqliteEmployeeApi subject;
 
     setUpAll(() {
       sqfliteFfiInit();
@@ -36,13 +45,13 @@ void main() {
         addTearDown(database.close);
         return database;
       });
+
+      subject = SqliteEmployeeApi(databaseFactory: databaseFactory);
     });
 
     group('open', () {
       test('creates the employees table with a not-null column per '
           'field the brief requires', () async {
-        final subject = SqliteEmployeeApi(databaseFactory: databaseFactory);
-
         await subject.open();
 
         final columns = await database.rawQuery(
@@ -66,6 +75,16 @@ void main() {
             ('salary_minor_units', 'INTEGER', 1, 0),
           ]),
         );
+      });
+    });
+
+    group('create', () {
+      test('inserts a record that readAll then returns', () async {
+        await subject.open();
+
+        await subject.create(record);
+
+        expect(await subject.readAll(), equals([record]));
       });
     });
   });
