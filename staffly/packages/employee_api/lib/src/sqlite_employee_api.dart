@@ -1,3 +1,4 @@
+import 'package:employee_api/src/models/models.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 
 /// The `CREATE TABLE` statement backing the employee resource.
@@ -33,11 +34,13 @@ class SqliteEmployeeApi {
   final DatabaseFactory _databaseFactory;
   final String _path;
 
+  late Database _database;
+
   /// Opens the database, creating the `employees` table on first run.
   ///
   /// Must be awaited before any other method.
   Future<void> open() async {
-    await _databaseFactory.openDatabase(
+    _database = await _databaseFactory.openDatabase(
       _path,
       options: OpenDatabaseOptions(
         version: 1,
@@ -46,5 +49,16 @@ class SqliteEmployeeApi {
         ),
       ),
     );
+  }
+
+  /// Inserts [record] into the `employees` table.
+  Future<void> create(EmployeeRecord record) async {
+    await _database.insert('employees', record.toRow());
+  }
+
+  /// Returns every stored employee.
+  Future<List<EmployeeRecord>> readAll() async {
+    final rows = await _database.query('employees');
+    return rows.map(EmployeeRecord.fromRow).toList();
   }
 }
