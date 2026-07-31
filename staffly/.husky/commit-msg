@@ -4,7 +4,7 @@
 COMMIT_MSG_FILE=$1
 COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
 
-if ! echo "$COMMIT_MSG" | grep -qE '^(feat|chore|Ui|sync|refactor|fix|update|husky)(\([a-zA-Z0-9_-]+\))? ?: (\(wip\) )?.+'; then
+if ! echo "$COMMIT_MSG" | grep -qE '^(feat|chore|Ui|sync|refactor|fix|update|husky|test|docs)(\([a-zA-Z0-9_-]+\))? ?: (\(wip\) )?.+'; then
   echo "❌ Commit message does not follow the convention."
   echo "   Expected : <type>(<scope>): <description>"
   echo "   With WIP  : <type>(<scope>): (wip) <description>"
@@ -16,6 +16,8 @@ if ! echo "$COMMIT_MSG" | grep -qE '^(feat|chore|Ui|sync|refactor|fix|update|hus
   echo "   feat(wip) : add login screen"
   echo "   feat: (wip) add login screen"
   echo "   fix(nav): (wip) broken navigation"
+  echo "   test(employee_api): failing test for row mapping"
+  echo "   docs: add architecture notes"
   exit 1
 fi
 
