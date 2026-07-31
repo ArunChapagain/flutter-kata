@@ -87,5 +87,13 @@ void main() {
         expect(await subject.readAll(), equals([record]));
       });
     });
+
+    group('readAll', () {
+      test('returns an empty list when nothing has been created', () async {
+        await subject.open();
+
+        expect(await subject.readAll(), isEmpty);
+      });
+    });
   });
 }
