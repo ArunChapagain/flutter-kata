@@ -83,7 +83,7 @@ void main() {
         await tester.pumpApp(
           AppTextFormField(
             label: 'Full Name',
-            onChanged: (String value) => changed = value,
+            onChanged: (value) => changed = value,
           ),
         );
         await tester.enterText(find.byType(TextField), 'Jane Doe');
