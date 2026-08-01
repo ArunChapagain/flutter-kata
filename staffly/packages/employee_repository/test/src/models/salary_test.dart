@@ -1,9 +1,6 @@
 import 'package:employee_repository/employee_repository.dart';
 import 'package:test/test.dart';
 
-// The currency is the Nepalese rupee: rupee is the major unit, paisa the
-// minor, 100 paisa to the rupee. `Salary` holds whole paisa, so every amount
-// below is written as paisa — `Salary(5000050)` is Rs 50,000.50.
 void main() {
   group(Salary, () {
     group('fromRupees', () {
