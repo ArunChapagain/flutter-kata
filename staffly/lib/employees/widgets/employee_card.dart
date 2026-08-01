@@ -25,14 +25,25 @@ class EmployeeCard extends StatelessWidget {
     final spacing = context.appSpacing;
 
     return AppCard(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(
+          color: theme.colorScheme.outline,
+        ),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              CircleAvatar(
-                radius: spacing.lg,
-                backgroundColor: theme.colorScheme.primaryContainer,
+              Container(
+                width: spacing.lg * 2,
+                height: spacing.lg * 2,
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                alignment: Alignment.center,
                 child: Text(
                   _initialsOf(employee.fullName),
                   style: theme.textTheme.titleMedium?.copyWith(
@@ -107,8 +118,8 @@ class EmployeeCard extends StatelessWidget {
     );
   }
 
-  void _confirmDelete(BuildContext context) {
-    showDialog<void>(
+  Future<void> _confirmDelete(BuildContext context) async {
+    await showDialog<void>(
       context: context,
       builder: (_) => AppConfirmDialog(
         title: 'Delete employee',

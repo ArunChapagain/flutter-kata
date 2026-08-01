@@ -5,10 +5,10 @@
 /// silently travel to the others.
 abstract final class AppRadii {
   /// The radius of a card or any other elevated surface.
-  static const card = 8.0;
+  static const card = 14.0;
 
   /// The radius of a text field or dropdown.
-  static const input = 8.0;
+  static const input = 14.0;
 
   /// The radius of a button.
   static const button = 8.0;
