@@ -1,3 +1,4 @@
+import 'package:employee_api/src/employees_table.dart';
 import 'package:equatable/equatable.dart';
 
 /// {@template employee_record}
@@ -22,11 +23,11 @@ class EmployeeRecord extends Equatable {
   /// bug rather than a case to tolerate — the casts are meant to throw.
   factory EmployeeRecord.fromRow(Map<String, Object?> row) {
     return EmployeeRecord(
-      id: row['id']! as String,
-      fullName: row['full_name']! as String,
-      jobTitle: row['job_title']! as String,
-      country: row['country']! as String,
-      salaryMinorUnits: row['salary_minor_units']! as int,
+      id: row[EmployeesTable.id]! as String,
+      fullName: row[EmployeesTable.fullName]! as String,
+      jobTitle: row[EmployeesTable.jobTitle]! as String,
+      country: row[EmployeesTable.country]! as String,
+      salaryMinorUnits: row[EmployeesTable.salaryMinorUnits]! as int,
     );
   }
 
@@ -48,11 +49,11 @@ class EmployeeRecord extends Equatable {
   /// Converts this record into a row for `sqflite` to insert or update.
   Map<String, Object?> toRow() {
     return {
-      'id': id,
-      'full_name': fullName,
-      'job_title': jobTitle,
-      'country': country,
-      'salary_minor_units': salaryMinorUnits,
+      EmployeesTable.id: id,
+      EmployeesTable.fullName: fullName,
+      EmployeesTable.jobTitle: jobTitle,
+      EmployeesTable.country: country,
+      EmployeesTable.salaryMinorUnits: salaryMinorUnits,
     };
   }
 
