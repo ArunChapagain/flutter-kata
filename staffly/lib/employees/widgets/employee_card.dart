@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:staffly/app/routes/routes.dart';
 import 'package:staffly/employees/bloc/bloc.dart';
+import 'package:staffly/l10n/l10n.dart';
 
 /// {@template employee_card}
 /// One row of the employee list — full name, job title, country and salary,
@@ -74,7 +75,7 @@ class EmployeeCard extends StatelessWidget {
           SizedBox(height: spacing.xxs),
           _IconLabel(
             icon: Icons.work_outline,
-            label: employee.salary.format(),
+            label: employee.salary.format(locale: context.l10n.localeName),
           ),
           SizedBox(height: spacing.sm),
           const Divider(height: 1),
