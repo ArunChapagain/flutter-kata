@@ -121,5 +121,23 @@ void main() {
         ],
       );
     });
+
+    group('$EmployeesSearchQueryChanged', () {
+      blocTest<EmployeesBloc, EmployeesState>(
+        'holds the typed query in state, so $EmployeesState.visibleEmployees '
+        'can narrow the list by it',
+        build: buildBloc,
+        seed: () => listed,
+        act: (bloc) =>
+            bloc.add(const EmployeesSearchQueryChanged(query: 'sam')),
+        expect: () => const [
+          EmployeesState(
+            status: EmployeesStatus.success,
+            employees: [arun, sam],
+            searchQuery: 'sam',
+          ),
+        ],
+      );
+    });
   });
 }
