@@ -64,7 +64,7 @@ void main() {
         () {
           expect(
             const Salary(5000050).format(locale: 'en_US'),
-            equals('\$50,000.50'),
+            equals(r'$50,000.50'),
           );
         },
       );
@@ -72,7 +72,7 @@ void main() {
       test('omits the fraction when there is no paisa', () {
         expect(
           const Salary(5000000).format(locale: 'en_US'),
-          equals('\$50,000'),
+          equals(r'$50,000'),
         );
       });
     });

@@ -6,7 +6,7 @@ abstract final class Routes {
   /// The add-new employee screen (no employee id needed).
   static const upsert = '/upsert';
 
-  /// The edit employee screen — deeplink-safe path with an [employeeId] segment.
+  /// The edit employee screen — deeplink-safe path with an employeeId segment.
   ///
   /// Use [upsertEdit] to build a full path from an id:
   /// ```dart
