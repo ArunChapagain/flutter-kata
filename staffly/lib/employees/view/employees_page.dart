@@ -57,6 +57,9 @@ class _Scaffold extends StatelessWidget {
           ],
         ),
         toolbarHeight: 72,
+        backgroundColor: theme.scaffoldBackgroundColor,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
       ),
       body: const EmployeesView(),
       floatingActionButton: FloatingActionButton(
