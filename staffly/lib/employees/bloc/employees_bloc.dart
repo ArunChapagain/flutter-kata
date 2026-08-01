@@ -31,9 +31,11 @@ class EmployeesBloc extends Bloc<EmployeesEvent, EmployeesState> {
     EmployeesFetchRequested event,
     Emitter<EmployeesState> emit,
   ) async {
-    emit(state.copyWith(
-      fetchState: state.fetchState.copyWith(status: FetchStatus.loading),
-    ));
+    emit(
+      state.copyWith(
+        fetchState: state.fetchState.copyWith(status: FetchStatus.loading),
+      ),
+    );
 
     try {
       final employees = await _employeeRepository.fetchEmployees();
@@ -47,9 +49,11 @@ class EmployeesBloc extends Bloc<EmployeesEvent, EmployeesState> {
         ),
       );
     } on EmployeeRepositoryException {
-      emit(state.copyWith(
-        fetchState: state.fetchState.copyWith(status: FetchStatus.failure),
-      ));
+      emit(
+        state.copyWith(
+          fetchState: state.fetchState.copyWith(status: FetchStatus.failure),
+        ),
+      );
     }
   }
 
@@ -57,12 +61,14 @@ class EmployeesBloc extends Bloc<EmployeesEvent, EmployeesState> {
     EmployeesEmployeeDeleted event,
     Emitter<EmployeesState> emit,
   ) async {
-    emit(state.copyWith(
-      deleteState: state.deleteState.copyWith(
-        status: DeleteStatus.loading,
-        deletedEmployee: event.employee,
+    emit(
+      state.copyWith(
+        deleteState: state.deleteState.copyWith(
+          status: DeleteStatus.loading,
+          deletedEmployee: event.employee,
+        ),
       ),
-    ));
+    );
 
     try {
       await _employeeRepository.deleteEmployee(event.employee.id);
@@ -81,9 +87,11 @@ class EmployeesBloc extends Bloc<EmployeesEvent, EmployeesState> {
         ),
       );
     } on EmployeeRepositoryException {
-      emit(state.copyWith(
-        deleteState: state.deleteState.copyWith(status: DeleteStatus.failure),
-      ));
+      emit(
+        state.copyWith(
+          deleteState: state.deleteState.copyWith(status: DeleteStatus.failure),
+        ),
+      );
     }
   }
 

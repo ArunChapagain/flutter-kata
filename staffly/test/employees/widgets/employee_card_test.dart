@@ -24,13 +24,15 @@ void main() {
 
     setUpAll(() {
       registerFallbackValue(
-        const EmployeesEmployeeDeleted(employee: Employee(
-          id: 'e1b9f0c4',
-          fullName: 'Jane Doe',
-          jobTitle: 'Senior Product Designer',
-          country: 'United States',
-          salary: Salary(14500000),
-        )),
+        const EmployeesEmployeeDeleted(
+          employee: Employee(
+            id: 'e1b9f0c4',
+            fullName: 'Jane Doe',
+            jobTitle: 'Senior Product Designer',
+            country: 'United States',
+            salary: Salary(14500000),
+          ),
+        ),
       );
     });
 
@@ -51,14 +53,17 @@ void main() {
 
       setUp(() {
         employeesBloc = _MockEmployeesBloc();
-        when(() => employeesBloc.state)
-            .thenReturn(const EmployeesState(fetchState: FetchState(status: FetchStatus.success)));
+        when(() => employeesBloc.state).thenReturn(
+          const EmployeesState(
+            fetchState: FetchState(status: FetchStatus.success),
+          ),
+        );
       });
 
       Widget buildSubject() => BlocProvider.value(
-            value: employeesBloc,
-            child: const EmployeeCard(employee: employee),
-          );
+        value: employeesBloc,
+        child: const EmployeeCard(employee: employee),
+      );
 
       testWidgets('opens an $AppConfirmDialog when tapped', (tester) async {
         await tester.pumpApp(buildSubject());

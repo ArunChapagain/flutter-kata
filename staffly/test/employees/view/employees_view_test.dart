@@ -49,7 +49,11 @@ void main() {
     ) async {
       when(
         () => employeesBloc.state,
-      ).thenReturn(const EmployeesState(fetchState: FetchState(status: FetchStatus.loading)));
+      ).thenReturn(
+        const EmployeesState(
+          fetchState: FetchState(status: FetchStatus.loading),
+        ),
+      );
 
       await tester.pumpApp(buildSubject());
 
@@ -80,7 +84,11 @@ void main() {
       ) async {
         when(
           () => employeesBloc.state,
-        ).thenReturn(const EmployeesState(fetchState: FetchState(status: FetchStatus.success)));
+        ).thenReturn(
+          const EmployeesState(
+            fetchState: FetchState(status: FetchStatus.success),
+          ),
+        );
 
         await tester.pumpApp(buildSubject());
 
@@ -94,7 +102,11 @@ void main() {
     ) async {
       when(
         () => employeesBloc.state,
-      ).thenReturn(const EmployeesState(fetchState: FetchState(status: FetchStatus.failure)));
+      ).thenReturn(
+        const EmployeesState(
+          fetchState: FetchState(status: FetchStatus.failure),
+        ),
+      );
 
       await tester.pumpApp(buildSubject());
 

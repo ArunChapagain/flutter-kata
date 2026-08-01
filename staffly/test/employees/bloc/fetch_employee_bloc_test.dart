@@ -23,9 +23,9 @@ void main() {
     });
 
     FetchEmployeeBloc buildBloc() => FetchEmployeeBloc(
-          employeeId: arun.id,
-          employeeRepository: employeeRepository,
-        );
+      employeeId: arun.id,
+      employeeRepository: employeeRepository,
+    );
 
     test('initial state is FetchEmployeeInitial', () {
       // We stub before construction because the bloc auto-dispatches.

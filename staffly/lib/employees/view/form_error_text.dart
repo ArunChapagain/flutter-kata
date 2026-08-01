@@ -11,37 +11,33 @@ import 'package:staffly/l10n/l10n.dart';
 String? fullNameErrorText(
   AppLocalizations l10n,
   FullNameValidationError? error,
-) =>
-    switch (error) {
-      FullNameValidationError.empty => l10n.validationFullNameRequired,
-      null => null,
-    };
+) => switch (error) {
+  FullNameValidationError.empty => l10n.validationFullNameRequired,
+  null => null,
+};
 
 String? jobTitleErrorText(
   AppLocalizations l10n,
   JobTitleValidationError? error,
-) =>
-    switch (error) {
-      JobTitleValidationError.empty => l10n.validationJobTitleRequired,
-      null => null,
-    };
+) => switch (error) {
+  JobTitleValidationError.empty => l10n.validationJobTitleRequired,
+  null => null,
+};
 
 String? countryErrorText(
   AppLocalizations l10n,
   CountryValidationError? error,
-) =>
-    switch (error) {
-      CountryValidationError.empty => l10n.validationCountryRequired,
-      CountryValidationError.unknown => l10n.validationCountryUnknown,
-      null => null,
-    };
+) => switch (error) {
+  CountryValidationError.empty => l10n.validationCountryRequired,
+  CountryValidationError.unknown => l10n.validationCountryUnknown,
+  null => null,
+};
 
 String? salaryErrorText(
   AppLocalizations l10n,
   SalaryValidationError? error,
-) =>
-    switch (error) {
-      SalaryValidationError.empty => l10n.validationSalaryRequired,
-      SalaryValidationError.invalid => l10n.validationSalaryInvalid,
-      null => null,
-    };
+) => switch (error) {
+  SalaryValidationError.empty => l10n.validationSalaryRequired,
+  SalaryValidationError.invalid => l10n.validationSalaryInvalid,
+  null => null,
+};

@@ -17,4 +17,3 @@ abstract final class Routes {
   /// Returns the concrete edit path for the given [employeeId].
   static String upsertEdit(String employeeId) => '/upsert/$employeeId';
 }
-

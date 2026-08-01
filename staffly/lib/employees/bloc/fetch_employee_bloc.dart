@@ -29,7 +29,7 @@ class FetchEmployeeBloc extends Bloc<FetchEmployeeEvent, FetchEmployeeState> {
   FetchEmployeeBloc({
     required this._employeeId,
     required this._employeeRepository,
-  })  : super(const FetchEmployeeInitial()) {
+  }) : super(const FetchEmployeeInitial()) {
     on<FetchEmployeeRequested>(_onRequested);
     add(const FetchEmployeeRequested());
   }
