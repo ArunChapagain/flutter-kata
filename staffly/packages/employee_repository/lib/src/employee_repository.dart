@@ -40,9 +40,9 @@ class EmployeeRepository {
 
       return records.map(_toEmployee).toList();
     } on EmployeeNotFoundApiException catch (e) {
-      throw EmployeeNotFoundException(e);
+      throw EmployeeNotFoundException(e.cause);
     } on EmployeeStorageApiException catch (e) {
-      throw EmployeeStorageException(e);
+      throw EmployeeStorageException(e.cause);
     }
   }
 
@@ -67,9 +67,9 @@ class EmployeeRepository {
     try {
       await _employeeApi.create(_toRecord(employee));
     } on EmployeeNotFoundApiException catch (e) {
-      throw EmployeeNotFoundException(e);
+      throw EmployeeNotFoundException(e.cause);
     } on EmployeeStorageApiException catch (e) {
-      throw EmployeeStorageException(e);
+      throw EmployeeStorageException(e.cause);
     }
 
     return employee;
@@ -81,9 +81,9 @@ class EmployeeRepository {
     try {
       await _employeeApi.update(_toRecord(employee));
     } on EmployeeNotFoundApiException catch (e) {
-      throw EmployeeNotFoundException(e);
+      throw EmployeeNotFoundException(e.cause);
     } on EmployeeStorageApiException catch (e) {
-      throw EmployeeStorageException(e);
+      throw EmployeeStorageException(e.cause);
     }
 
     return employee;
@@ -94,9 +94,9 @@ class EmployeeRepository {
     try {
       await _employeeApi.delete(id);
     } on EmployeeNotFoundApiException catch (e) {
-      throw EmployeeNotFoundException(e);
+      throw EmployeeNotFoundException(e.cause);
     } on EmployeeStorageApiException catch (e) {
-      throw EmployeeStorageException(e);
+      throw EmployeeStorageException(e.cause);
     }
   }
 
