@@ -1,8 +1,9 @@
 import 'package:app_ui/app_ui.dart';
 import 'package:employee_repository/employee_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:staffly/app/routes/routes.dart';
 import 'package:staffly/employees/bloc/bloc.dart';
-import 'package:staffly/employees/view/employee_upsert_page.dart';
 import 'package:staffly/employees/view/employees_view.dart';
 
 /// {@template employees_page}
@@ -60,7 +61,12 @@ class _Scaffold extends StatelessWidget {
       body: const EmployeesView(),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Theme.of(context).primaryColor,
-        onPressed: () => Navigator.of(context).push(EmployeeUpsertPage.route()),
+        onPressed: () async {
+          final didChange = await context.push<bool>(Routes.upsert);
+          if (didChange == true && context.mounted) {
+            context.read<EmployeesBloc>().add(const EmployeesFetchRequested());
+          }
+        },
         child: Icon(
           Icons.add,
           color: Theme.of(context).colorScheme.onPrimary,

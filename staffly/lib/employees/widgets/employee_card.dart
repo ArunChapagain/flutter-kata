@@ -1,8 +1,9 @@
 import 'package:app_ui/app_ui.dart';
 import 'package:employee_repository/employee_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:staffly/app/routes/routes.dart';
 import 'package:staffly/employees/bloc/bloc.dart';
-import 'package:staffly/employees/view/view.dart';
 
 /// {@template employee_card}
 /// One row of the employee list — full name, job title, country and salary,
@@ -71,9 +72,17 @@ class EmployeeCard extends StatelessWidget {
             children: [
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () => Navigator.of(context).push(
-                    EmployeeUpsertPage.route(employee: employee),
-                  ),
+                  onPressed: () async {
+                    final didChange = await context.push<bool>(
+                      Routes.upsert,
+                      extra: employee,
+                    );
+                    if (didChange == true && context.mounted) {
+                      context.read<EmployeesBloc>().add(
+                        const EmployeesFetchRequested(),
+                      );
+                    }
+                  },
                   icon: const Icon(Icons.edit_outlined, size: 16),
                   label: const Text('Edit'),
                 ),

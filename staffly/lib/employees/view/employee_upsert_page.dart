@@ -2,7 +2,7 @@ import 'package:app_ui/app_ui.dart';
 import 'package:employee_repository/employee_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
-import 'package:staffly/employees/bloc/bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:staffly/employees/cubit/cubit.dart';
 import 'package:staffly/employees/models/countries.dart';
 import 'package:staffly/employees/view/form_error_text.dart';
@@ -21,12 +21,7 @@ class EmployeeUpsertPage extends StatelessWidget {
   /// The employee to edit, or null to create a new one.
   final Employee? employee;
 
-  /// Route to navigate to this page.
-  static Route<void> route({Employee? employee}) {
-    return MaterialPageRoute<void>(
-      builder: (_) => EmployeeUpsertPage(employee: employee),
-    );
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -63,8 +58,7 @@ class EmployeeUpsertView extends StatelessWidget {
       listenWhen: (previous, current) => previous.status != current.status,
       listener: (context, state) {
         if (state.status.isSuccess) {
-          Navigator.of(context).pop();
-          context.read<EmployeesBloc>().add(const EmployeesFetchRequested());
+          context.pop(true);
         } else if (state.status.isFailure) {
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
@@ -80,7 +74,7 @@ class EmployeeUpsertView extends StatelessWidget {
         appBar: AppBar(
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new, size: 20),
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => context.pop(),
           ),
           title: Text(
             title,
@@ -293,7 +287,7 @@ class _BottomBar extends StatelessWidget {
                   child: TextButton(
                     onPressed: isSubmitting
                         ? null
-                        : () => Navigator.of(context).pop(),
+                        : () => context.pop(),
                     child: Text(
                       'Back',
                       style: theme.textTheme.labelLarge?.copyWith(
