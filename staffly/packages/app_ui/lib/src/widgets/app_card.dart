@@ -8,7 +8,7 @@ import 'package:app_ui/app_ui.dart';
 /// {@endtemplate}
 class AppCard extends StatelessWidget {
   /// {@macro app_card}
-  const AppCard({required this.child, this.onTap, super.key});
+  const AppCard({required this.child, this.onTap, this.shape, super.key});
 
   /// The card's content.
   final Widget child;
@@ -18,6 +18,9 @@ class AppCard extends StatelessWidget {
   /// When null the card offers no ink response at all, so it neither splashes
   /// nor swallows a gesture meant for something beneath it.
   final VoidCallback? onTap;
+
+  /// The shape of the card's material.
+  final ShapeBorder? shape;
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +32,7 @@ class AppCard extends StatelessWidget {
 
     return Card(
       clipBehavior: Clip.antiAlias,
+      shape: shape,
       child: onTap == null ? content : InkWell(onTap: onTap, child: content),
     );
   }
