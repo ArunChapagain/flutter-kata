@@ -56,6 +56,16 @@ class SqliteEmployeeApi {
     await _database.insert('employees', record.toRow());
   }
 
+  /// Overwrites the stored employee whose id matches [record]'s.
+  Future<void> update(EmployeeRecord record) async {
+    await _database.update(
+      'employees',
+      record.toRow(),
+      where: 'id = ?',
+      whereArgs: [record.id],
+    );
+  }
+
   /// Returns every stored employee.
   Future<List<EmployeeRecord>> readAll() async {
     final rows = await _database.query('employees');
