@@ -173,5 +173,91 @@ void main() {
         verify(() => employeeApi.delete(id)).called(1);
       });
     });
+
+    group('api failures', () {
+      // Stands in for whatever the api was holding — a sqflite
+      // DatabaseException in production. Its type is deliberately irrelevant
+      // here: the repository forwards it without inspecting it.
+      const cause = 'the underlying storage error';
+
+      Future<void> create() => subject.createEmployee(
+        fullName: 'Arun Chapagai',
+        jobTitle: 'Software Engineer',
+        country: 'Nepal',
+        salary: const Salary(5000050),
+      );
+
+      test(
+        'reach the caller as an $EmployeeNotFoundException when the api '
+        'cannot find the employee',
+        () async {
+          when(
+            () => employeeApi.update(any()),
+          ).thenThrow(const EmployeeNotFoundApiException(cause));
+          when(
+            () => employeeApi.delete(any()),
+          ).thenThrow(const EmployeeNotFoundApiException(cause));
+
+          await expectLater(
+            () => subject.updateEmployee(employee),
+            throwsA(isA<EmployeeNotFoundException>()),
+          );
+          await expectLater(
+            () => subject.deleteEmployee(id),
+            throwsA(isA<EmployeeNotFoundException>()),
+          );
+        },
+      );
+
+      test(
+        'reach the caller as an $EmployeeStorageException from every method, '
+        'so no $EmployeeApiException escapes the repository',
+        () async {
+          when(
+            employeeApi.readAll,
+          ).thenThrow(const EmployeeStorageApiException(cause));
+          when(
+            () => employeeApi.create(any()),
+          ).thenThrow(const EmployeeStorageApiException(cause));
+          when(
+            () => employeeApi.update(any()),
+          ).thenThrow(const EmployeeStorageApiException(cause));
+          when(
+            () => employeeApi.delete(any()),
+          ).thenThrow(const EmployeeStorageApiException(cause));
+
+          await expectLater(
+            subject.fetchEmployees,
+            throwsA(isA<EmployeeStorageException>()),
+          );
+          await expectLater(create, throwsA(isA<EmployeeStorageException>()));
+          await expectLater(
+            () => subject.updateEmployee(employee),
+            throwsA(isA<EmployeeStorageException>()),
+          );
+          await expectLater(
+            () => subject.deleteEmployee(id),
+            throwsA(isA<EmployeeStorageException>()),
+          );
+        },
+      );
+
+      test('carry their cause through the translation, for logging', () async {
+        when(
+          employeeApi.readAll,
+        ).thenThrow(const EmployeeStorageApiException(cause));
+
+        await expectLater(
+          subject.fetchEmployees,
+          throwsA(
+            isA<EmployeeStorageException>().having(
+              (exception) => exception.cause,
+              'cause',
+              cause,
+            ),
+          ),
+        );
+      });
+    });
   });
 }
