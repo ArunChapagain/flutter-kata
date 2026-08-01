@@ -67,7 +67,6 @@ final class EmployeesState extends Equatable {
   final DeleteState deleteState;
   final String searchQuery;
 
-  /// [employees], narrowed to those matching [searchQuery].
   List<Employee> get visibleEmployees {
     final query = searchQuery.trim().toLowerCase();
     if (query.isEmpty) return fetchState.employees;

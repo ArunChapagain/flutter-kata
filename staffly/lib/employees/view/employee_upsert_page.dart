@@ -21,8 +21,6 @@ class EmployeeUpsertPage extends StatelessWidget {
   /// The employee to edit, or null to create a new one.
   final Employee? employee;
 
-
-
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -50,6 +48,7 @@ class EmployeeUpsertView extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isEditing = context.select(
+      // ignore: avoid_types_on_closure_parameters, needed for context.select type inference
       (EmployeeUpsertCubit cubit) => cubit.state.isEditing,
     );
     final title = isEditing ? 'Edit Employee' : 'Add Employee';
@@ -285,9 +284,7 @@ class _BottomBar extends StatelessWidget {
               children: [
                 Expanded(
                   child: TextButton(
-                    onPressed: isSubmitting
-                        ? null
-                        : () => context.pop(),
+                    onPressed: isSubmitting ? null : () => context.pop(),
                     child: Text(
                       'Back',
                       style: theme.textTheme.labelLarge?.copyWith(

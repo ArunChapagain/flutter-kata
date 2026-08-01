@@ -12,6 +12,7 @@ import 'package:staffly/employees/widgets/widgets.dart';
 ///
 /// Renders a search field that dispatches [EmployeesSearchQueryChanged] on
 /// every keystroke; the list narrows to [EmployeesState.visibleEmployees]
+// ignore: comment_references
 /// rather than [EmployeesState.employees].
 /// {@endtemplate}
 class EmployeesView extends StatelessWidget {

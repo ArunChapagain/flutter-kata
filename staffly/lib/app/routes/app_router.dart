@@ -16,7 +16,7 @@ final router = GoRouter(
   routes: [
     GoRoute(
       path: Routes.home,
-      builder: (_, __) => const EmployeesPage(),
+      builder: (_, _) => const EmployeesPage(),
     ),
     GoRoute(
       path: Routes.upsert,
