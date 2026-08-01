@@ -116,6 +116,26 @@ void main() {
           expect(await subject.readAll(), equals([promoted]));
         },
       );
+
+      test(
+        'throws $EmployeeNotFoundApiException when no record has that id',
+        () async {
+          await subject.open();
+
+          const unknown = EmployeeRecord(
+            id: 'no-such-employee',
+            fullName: 'Nobody',
+            jobTitle: 'Ghost',
+            country: 'Nepal',
+            salaryMinorUnits: 1,
+          );
+
+          await expectLater(
+            () => subject.update(unknown),
+            throwsA(isA<EmployeeNotFoundApiException>()),
+          );
+        },
+      );
     });
 
     group('delete', () {
@@ -136,6 +156,18 @@ void main() {
 
         expect(await subject.readAll(), equals([colleague]));
       });
+
+      test(
+        'throws $EmployeeNotFoundApiException when no record has that id',
+        () async {
+          await subject.open();
+
+          await expectLater(
+            () => subject.delete('no-such-employee'),
+            throwsA(isA<EmployeeNotFoundApiException>()),
+          );
+        },
+      );
     });
 
     group('close', () {
@@ -145,6 +177,63 @@ void main() {
         await subject.close();
 
         expect(database.isOpen, isFalse);
+      });
+    });
+
+    group('storage failures', () {
+      test(
+        'surface as $EmployeeStorageApiException from every method, so no '
+        'sqflite $DatabaseException escapes the package',
+        () async {
+          // The real ffi factory, pointed at a directory that cannot exist.
+          final unopenable = SqliteEmployeeApi(
+            databaseFactory: databaseFactoryFfi,
+            path: '/no/such/directory/employees.db',
+          );
+
+          await expectLater(
+            unopenable.open,
+            throwsA(isA<EmployeeStorageApiException>()),
+          );
+
+          // The rest reach sqflite through a database closed underneath
+          // them — a real failure that needs no broken file on disk.
+          await subject.open();
+          await subject.close();
+
+          await expectLater(
+            () => subject.create(record),
+            throwsA(isA<EmployeeStorageApiException>()),
+          );
+          await expectLater(
+            subject.readAll,
+            throwsA(isA<EmployeeStorageApiException>()),
+          );
+          await expectLater(
+            () => subject.update(record),
+            throwsA(isA<EmployeeStorageApiException>()),
+          );
+          await expectLater(
+            () => subject.delete(record.id),
+            throwsA(isA<EmployeeStorageApiException>()),
+          );
+        },
+      );
+
+      test('keep the underlying sqflite error as their cause', () async {
+        await subject.open();
+        await subject.close();
+
+        await expectLater(
+          subject.readAll,
+          throwsA(
+            isA<EmployeeStorageApiException>().having(
+              (exception) => exception.cause,
+              'cause',
+              isA<DatabaseException>(),
+            ),
+          ),
+        );
       });
     });
   });
