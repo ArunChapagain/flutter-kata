@@ -1,4 +1,5 @@
 import 'package:employee_api/employee_api.dart';
+import 'package:employee_repository/src/exceptions/exceptions.dart';
 import 'package:employee_repository/src/models/models.dart';
 import 'package:uuid/uuid.dart';
 
@@ -34,9 +35,15 @@ class EmployeeRepository {
 
   /// Returns every stored employee.
   Future<List<Employee>> fetchEmployees() async {
-    final records = await _employeeApi.readAll();
+    try {
+      final records = await _employeeApi.readAll();
 
-    return records.map(_toEmployee).toList();
+      return records.map(_toEmployee).toList();
+    } on EmployeeNotFoundApiException catch (e) {
+      throw EmployeeNotFoundException(e);
+    } on EmployeeStorageApiException catch (e) {
+      throw EmployeeStorageException(e);
+    }
   }
 
   /// Stores a new employee and returns it.
@@ -57,7 +64,13 @@ class EmployeeRepository {
       salary: salary,
     );
 
-    await _employeeApi.create(_toRecord(employee));
+    try {
+      await _employeeApi.create(_toRecord(employee));
+    } on EmployeeNotFoundApiException catch (e) {
+      throw EmployeeNotFoundException(e);
+    } on EmployeeStorageApiException catch (e) {
+      throw EmployeeStorageException(e);
+    }
 
     return employee;
   }
@@ -65,13 +78,27 @@ class EmployeeRepository {
   /// Overwrites the stored employee that [employee] shares an id with, and
   /// returns it.
   Future<Employee> updateEmployee(Employee employee) async {
-    await _employeeApi.update(_toRecord(employee));
+    try {
+      await _employeeApi.update(_toRecord(employee));
+    } on EmployeeNotFoundApiException catch (e) {
+      throw EmployeeNotFoundException(e);
+    } on EmployeeStorageApiException catch (e) {
+      throw EmployeeStorageException(e);
+    }
 
     return employee;
   }
 
   /// Removes the stored employee with the given [id].
-  Future<void> deleteEmployee(String id) => _employeeApi.delete(id);
+  Future<void> deleteEmployee(String id) async {
+    try {
+      await _employeeApi.delete(id);
+    } on EmployeeNotFoundApiException catch (e) {
+      throw EmployeeNotFoundException(e);
+    } on EmployeeStorageApiException catch (e) {
+      throw EmployeeStorageException(e);
+    }
+  }
 
   Employee _toEmployee(EmployeeRecord record) => Employee(
     id: record.id,
