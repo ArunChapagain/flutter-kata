@@ -1,0 +1,24 @@
+name: employee_repository
+description: >-
+  Repository layer for employees — the domain models and the orchestration
+  over the data layer.
+version: 0.1.0+1
+publish_to: none
+
+environment:
+  sdk: ^3.12.0
+
+dependencies:
+  # The data layer, as a path dependency. This is the only package that
+  # depends on it — the app depends on employee_repository alone, so no bloc
+  # or widget can reach sqlite even by accident.
+  employee_api:
+    path: ../employee_api
+  equatable: ^2.0.7
+  intl: ^0.20.2
+  uuid: ^4.6.0
+
+dev_dependencies:
+  mocktail: ^1.0.5
+  test: ^1.31.1
+  very_good_analysis: ^10.3.0

@@ -1,30 +1,20 @@
+import 'package:employee_api/src/employee_api.dart';
+import 'package:employee_api/src/employees_table.dart';
 import 'package:employee_api/src/exceptions/exceptions.dart';
 import 'package:employee_api/src/models/models.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 
-/// The `CREATE TABLE` statement backing the employee resource.
-///
-/// Every column the brief requires is `NOT NULL`, so an incomplete employee is
-/// rejected by the database itself and not only by the Dart constructor.
-/// `id` spells out `NOT NULL` because SQLite does not imply it for a
-/// non-`INTEGER` primary key.
-const _createEmployeesTable = '''
-CREATE TABLE employees (
-  id                 TEXT    PRIMARY KEY NOT NULL,
-  full_name          TEXT    NOT NULL,
-  job_title          TEXT    NOT NULL,
-  country            TEXT    NOT NULL,
-  salary_minor_units INTEGER NOT NULL
-)''';
+/// Matches the row whose primary key is the first `whereArg`.
+const _whereId = '${EmployeesTable.id} = ?';
 
 /// {@template sqlite_employee_api}
-/// An employee store backed by SQLite.
+/// An [EmployeeApi] backed by SQLite.
 ///
 /// The [DatabaseFactory] is injected rather than created, which is what keeps
 /// this package free of Flutter: production passes `databaseFactory` from
 /// `package:sqflite`, tests pass `databaseFactoryFfi` opened in memory.
 /// {@endtemplate}
-class SqliteEmployeeApi {
+class SqliteEmployeeApi implements EmployeeApi {
   /// {@macro sqlite_employee_api}
   /// Callers pass `databaseFactory:` and `path:` — the fields stay private.
   SqliteEmployeeApi({
@@ -37,11 +27,8 @@ class SqliteEmployeeApi {
 
   late Database _database;
 
-  /// Opens the database, creating the `employees` table on first run.
-  ///
-  /// Must be awaited before any other method.
-  ///
-  /// Throws an [EmployeeStorageApiException] if the database cannot be opened.
+  /// Creates the `employees` table on first run.
+  @override
   Future<void> open() async {
     _database = await _guardStorage(
       () => _databaseFactory.openDatabase(
@@ -49,30 +36,29 @@ class SqliteEmployeeApi {
         options: OpenDatabaseOptions(
           version: 1,
           onCreate: (database, version) => database.execute(
-            _createEmployeesTable,
+            EmployeesTable.createStatement,
           ),
         ),
       ),
     );
   }
 
-  /// Inserts [record] into the `employees` table.
-  ///
-  /// Throws an [EmployeeStorageApiException] if the insert fails.
+  @override
   Future<void> create(EmployeeRecord record) async {
-    await _guardStorage(() => _database.insert('employees', record.toRow()));
+    await _guardStorage(
+      () => _database.insert(EmployeesTable.name, record.toRow()),
+    );
   }
 
-  /// Overwrites the stored employee whose id matches [record]'s.
-  ///
-  /// Throws an [EmployeeNotFoundApiException] if no row has that id, and an
-  /// [EmployeeStorageApiException] if the update fails.
+  /// The affected row count is checked outside [_guardStorage], so a missing
+  /// id is reported as not-found rather than reclassified as a storage fault.
+  @override
   Future<void> update(EmployeeRecord record) async {
     final updated = await _guardStorage(
       () => _database.update(
-        'employees',
+        EmployeesTable.name,
         record.toRow(),
-        where: 'id = ?',
+        where: _whereId,
         whereArgs: [record.id],
       ),
     );
@@ -80,15 +66,14 @@ class SqliteEmployeeApi {
     if (updated == 0) throw const EmployeeNotFoundApiException();
   }
 
-  /// Removes the stored employee with the given [id].
-  ///
-  /// Throws an [EmployeeNotFoundApiException] if no row has that id, and an
-  /// [EmployeeStorageApiException] if the delete fails.
+  /// As with [update], the affected row count is checked outside
+  /// [_guardStorage].
+  @override
   Future<void> delete(String id) async {
     final deleted = await _guardStorage(
       () => _database.delete(
-        'employees',
-        where: 'id = ?',
+        EmployeesTable.name,
+        where: _whereId,
         whereArgs: [id],
       ),
     );
@@ -96,11 +81,11 @@ class SqliteEmployeeApi {
     if (deleted == 0) throw const EmployeeNotFoundApiException();
   }
 
-  /// Returns every stored employee.
-  ///
-  /// Throws an [EmployeeStorageApiException] if the query fails.
+  @override
   Future<List<EmployeeRecord>> readAll() async {
-    final rows = await _guardStorage(() => _database.query('employees'));
+    final rows = await _guardStorage(
+      () => _database.query(EmployeesTable.name),
+    );
     return rows.map(EmployeeRecord.fromRow).toList();
   }
 
@@ -122,6 +107,8 @@ class SqliteEmployeeApi {
     }
   }
 
-  /// Releases the database. No other method may be called afterwards.
+  /// Unguarded: a second `close()` returns normally rather than raising a
+  /// [DatabaseException], so there is no failure here to translate.
+  @override
   Future<void> close() => _database.close();
 }
