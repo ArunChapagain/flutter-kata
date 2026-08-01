@@ -100,11 +100,18 @@ GoRouter _testRouter({
       ),
       GoRoute(
         path: Routes.upsert,
+        builder: (_, _) => RepositoryProvider.value(
+          value: employeeRepository,
+          child: const EmployeeUpsertPage(),
+        ),
+      ),
+      GoRoute(
+        path: Routes.upsertEditTemplate,
         builder: (_, state) {
-          final employee = state.extra as Employee?;
+          final employeeId = state.pathParameters['employeeId']!;
           return RepositoryProvider.value(
             value: employeeRepository,
-            child: EmployeeUpsertPage(employee: employee),
+            child: EmployeeUpsertPage(employeeId: employeeId),
           );
         },
       ),
@@ -177,6 +184,9 @@ void main() {
       when(
         () => employeeRepository.fetchEmployees(),
       ).thenAnswer((_) async => [_arun]);
+      when(
+        () => employeeRepository.fetchEmployee(any()),
+      ).thenAnswer((_) async => _arun);
     });
 
     testWidgets(
