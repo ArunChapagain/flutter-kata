@@ -165,6 +165,26 @@ void main() {
           expect(find.text(sam.fullName), findsNothing);
         },
       );
+
+      testWidgets(
+        'shows an $AppEmptyState when search yields no results',
+        (tester) async {
+          when(() => employeesBloc.state).thenReturn(
+            const EmployeesState(
+              fetchState: FetchState(
+                status: FetchStatus.success,
+                employees: [arun, sam],
+              ),
+              searchQuery: 'NonExistentEmployee',
+            ),
+          );
+
+          await tester.pumpApp(buildSubject());
+
+          expect(find.byType(AppEmptyState), findsOneWidget);
+          expect(find.text('No results found'), findsOneWidget);
+        },
+      );
     });
   });
 }
