@@ -5,8 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:formz/formz.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:staffly/employees/bloc/bloc.dart';
+import 'package:staffly/app/routes/routes.dart';
 import 'package:staffly/employees/cubit/cubit.dart';
 import 'package:staffly/employees/models/country.dart';
 import 'package:staffly/employees/models/full_name.dart';
@@ -20,9 +21,6 @@ import '../../helpers/helpers.dart';
 // ---------------------------------------------------------------------------
 // Doubles
 // ---------------------------------------------------------------------------
-
-class _MockEmployeesBloc extends MockBloc<EmployeesEvent, EmployeesState>
-    implements EmployeesBloc {}
 
 class _MockEmployeeUpsertCubit extends MockCubit<EmployeeUpsertState>
     implements EmployeeUpsertCubit {}
@@ -51,21 +49,45 @@ const _validState = EmployeeUpsertState(
 // Helpers
 // ---------------------------------------------------------------------------
 
-/// Pumps [EmployeeUpsertView] with mocked cubit (and an ancestor bloc so the
-/// view can dispatch [EmployeesFetchRequested] on success).
+/// Pumps [EmployeeUpsertView] with a mocked cubit.
 Future<void> _pumpView(
   WidgetTester tester,
-  EmployeeUpsertCubit cubit, {
-  required EmployeesBloc bloc,
-}) {
+  EmployeeUpsertCubit cubit,
+) {
   return tester.pumpApp(
-    MultiBlocProvider(
-      providers: [
-        BlocProvider<EmployeesBloc>.value(value: bloc),
-        BlocProvider<EmployeeUpsertCubit>.value(value: cubit),
-      ],
+    BlocProvider<EmployeeUpsertCubit>.value(
+      value: cubit,
       child: const EmployeeUpsertView(),
     ),
+  );
+}
+
+/// Creates a [GoRouter] whose initial route is [EmployeesPage] with a second
+/// route for the upsert page, wired as the real app router is.
+GoRouter _testRouter({
+  required EmployeeRepository employeeRepository,
+}) {
+  return GoRouter(
+    initialLocation: Routes.home,
+    routes: [
+      GoRoute(
+        path: Routes.home,
+        builder: (_, __) => RepositoryProvider.value(
+          value: employeeRepository,
+          child: const EmployeesPage(),
+        ),
+      ),
+      GoRoute(
+        path: Routes.upsert,
+        builder: (_, state) {
+          final employee = state.extra as Employee?;
+          return RepositoryProvider.value(
+            value: employeeRepository,
+            child: EmployeeUpsertPage(employee: employee),
+          );
+        },
+      ),
+    ],
   );
 }
 
@@ -84,16 +106,15 @@ void main() {
       ).thenAnswer((_) async => [_arun]);
     });
 
-    Widget buildPage() => const EmployeesPage();
-
     testWidgets(
       'has a FAB that opens an $EmployeeUpsertPage for a new employee',
       (tester) async {
-        await tester.pumpApp(
-          buildPage(),
+        final goRouter = _testRouter(
           employeeRepository: employeeRepository,
         );
-        await tester.pump(); // let the fetch settle
+
+        await tester.pumpRouted(goRouter);
+        await tester.pumpAndSettle();
 
         await tester.tap(find.byType(FloatingActionButton));
         await tester.pumpAndSettle();
@@ -105,11 +126,12 @@ void main() {
     testWidgets(
       'FAB opens the modal with no pre-filled employee (adding mode)',
       (tester) async {
-        await tester.pumpApp(
-          buildPage(),
+        final goRouter = _testRouter(
           employeeRepository: employeeRepository,
         );
-        await tester.pump();
+
+        await tester.pumpRouted(goRouter);
+        await tester.pumpAndSettle();
 
         await tester.tap(find.byType(FloatingActionButton));
         await tester.pumpAndSettle();
@@ -127,42 +149,24 @@ void main() {
   });
 
   group('$EmployeeCard — Edit button', () {
-    late EmployeesBloc employeesBloc;
     late EmployeeRepository employeeRepository;
 
-    setUpAll(() {
-      registerFallbackValue(const EmployeesFetchRequested());
-      registerFallbackValue(
-        const EmployeesEmployeeDeleted(employee: _arun),
-      );
-    });
-
     setUp(() {
-      employeesBloc = _MockEmployeesBloc();
       employeeRepository = _MockEmployeeRepository();
-      when(() => employeesBloc.state).thenReturn(
-        const EmployeesState(
-          status: EmployeesStatus.success,
-          employees: [_arun],
-        ),
-      );
       when(
         () => employeeRepository.fetchEmployees(),
       ).thenAnswer((_) async => [_arun]);
     });
 
-    Widget buildCard() => BlocProvider.value(
-      value: employeesBloc,
-      child: const EmployeeCard(employee: _arun),
-    );
-
     testWidgets(
       'opens an $EmployeeUpsertPage when the Edit button is tapped',
       (tester) async {
-        await tester.pumpApp(
-          buildCard(),
+        final goRouter = _testRouter(
           employeeRepository: employeeRepository,
         );
+
+        await tester.pumpRouted(goRouter);
+        await tester.pumpAndSettle();
 
         await tester.tap(find.text('Edit'));
         await tester.pumpAndSettle();
@@ -174,10 +178,12 @@ void main() {
     testWidgets(
       'opens the modal in editing mode (title says "Edit Employee")',
       (tester) async {
-        await tester.pumpApp(
-          buildCard(),
+        final goRouter = _testRouter(
           employeeRepository: employeeRepository,
         );
+
+        await tester.pumpRouted(goRouter);
+        await tester.pumpAndSettle();
 
         await tester.tap(find.text('Edit'));
         await tester.pumpAndSettle();
@@ -189,27 +195,18 @@ void main() {
 
   group('$EmployeeUpsertView', () {
     late EmployeeUpsertCubit cubit;
-    late EmployeesBloc bloc;
-
-    setUpAll(() {
-      registerFallbackValue(const EmployeesFetchRequested());
-    });
 
     setUp(() {
       cubit = _MockEmployeeUpsertCubit();
-      bloc = _MockEmployeesBloc();
 
       // Default: empty pure state (adding mode).
       when(() => cubit.state).thenReturn(const EmployeeUpsertState());
-      when(() => bloc.state).thenReturn(
-        const EmployeesState(status: EmployeesStatus.success),
-      );
     });
 
     // ── Field → cubit wiring ─────────────────────────────────────────────
 
     testWidgets('calls fullNameChanged on every keystroke', (tester) async {
-      await _pumpView(tester, cubit, bloc: bloc);
+      await _pumpView(tester, cubit);
 
       await tester.enterText(
         find.byKey(const Key('upsertForm_fullName_textField')),
@@ -220,7 +217,7 @@ void main() {
     });
 
     testWidgets('calls jobTitleChanged on every keystroke', (tester) async {
-      await _pumpView(tester, cubit, bloc: bloc);
+      await _pumpView(tester, cubit);
 
       await tester.enterText(
         find.byKey(const Key('upsertForm_jobTitle_textField')),
@@ -231,7 +228,7 @@ void main() {
     });
 
     testWidgets('calls salaryChanged on every keystroke', (tester) async {
-      await _pumpView(tester, cubit, bloc: bloc);
+      await _pumpView(tester, cubit);
 
       await tester.enterText(
         find.byKey(const Key('upsertForm_salary_textField')),
@@ -244,7 +241,7 @@ void main() {
     testWidgets(
       'calls countryChanged when a country is selected from the dropdown',
       (tester) async {
-        await _pumpView(tester, cubit, bloc: bloc);
+        await _pumpView(tester, cubit);
 
         await tester.tap(find.byKey(const Key('upsertForm_country_dropdown')));
         await tester.pumpAndSettle();
@@ -267,7 +264,7 @@ void main() {
           ),
         );
 
-        await _pumpView(tester, cubit, bloc: bloc);
+        await _pumpView(tester, cubit);
 
         expect(find.text('Full name is required'), findsOneWidget);
       },
@@ -277,7 +274,7 @@ void main() {
       'does not show full-name error when the field is pure (untouched)',
       (tester) async {
         // Default state has pure inputs — no errors yet.
-        await _pumpView(tester, cubit, bloc: bloc);
+        await _pumpView(tester, cubit);
 
         expect(find.text('Full name is required'), findsNothing);
       },
@@ -292,7 +289,7 @@ void main() {
           ),
         );
 
-        await _pumpView(tester, cubit, bloc: bloc);
+        await _pumpView(tester, cubit);
 
         expect(find.text('Job title is required'), findsOneWidget);
       },
@@ -307,7 +304,7 @@ void main() {
           ),
         );
 
-        await _pumpView(tester, cubit, bloc: bloc);
+        await _pumpView(tester, cubit);
 
         expect(find.text('Please select a country'), findsOneWidget);
       },
@@ -322,7 +319,7 @@ void main() {
           ),
         );
 
-        await _pumpView(tester, cubit, bloc: bloc);
+        await _pumpView(tester, cubit);
 
         expect(find.text('Enter a valid salary'), findsOneWidget);
       },
@@ -334,7 +331,7 @@ void main() {
       tester,
     ) async {
       // Default state: pure (not valid).
-      await _pumpView(tester, cubit, bloc: bloc);
+      await _pumpView(tester, cubit);
 
       final submitFinder = find.byKey(const Key('upsertForm_submit_button'));
       final button = tester.widget<FilledButton>(submitFinder);
@@ -346,7 +343,7 @@ void main() {
     ) async {
       when(() => cubit.state).thenReturn(_validState);
 
-      await _pumpView(tester, cubit, bloc: bloc);
+      await _pumpView(tester, cubit);
 
       final submitFinder = find.byKey(const Key('upsertForm_submit_button'));
       final button = tester.widget<FilledButton>(submitFinder);
@@ -357,7 +354,7 @@ void main() {
       when(() => cubit.state).thenReturn(_validState);
       when(() => cubit.submitted()).thenAnswer((_) async {});
 
-      await _pumpView(tester, cubit, bloc: bloc);
+      await _pumpView(tester, cubit);
 
       await tester.tap(find.byKey(const Key('upsertForm_submit_button')));
       await tester.pump();
@@ -374,7 +371,7 @@ void main() {
           _validState.copyWith(status: FormzSubmissionStatus.inProgress),
         );
 
-        await _pumpView(tester, cubit, bloc: bloc);
+        await _pumpView(tester, cubit);
 
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
         // The submit button must be disabled during submission.
@@ -385,10 +382,10 @@ void main() {
       },
     );
 
-    // ── Success: pop + refetch ───────────────────────────────────────────
+    // ── Success: pop ─────────────────────────────────────────────────────
 
     testWidgets(
-      'pops the modal and dispatches $EmployeesFetchRequested on success',
+      'pops the modal on success',
       (tester) async {
         // Start with a valid, pre-submission state, then emit success.
         whenListen(
@@ -400,15 +397,11 @@ void main() {
           initialState: _validState,
         );
 
-        await _pumpView(tester, cubit, bloc: bloc);
+        await _pumpView(tester, cubit);
         await tester.pumpAndSettle();
 
         // The view should have popped — EmployeeUpsertView is gone.
         expect(find.byType(EmployeeUpsertView), findsNothing);
-
-        verify(
-          () => bloc.add(const EmployeesFetchRequested()),
-        ).called(1);
       },
     );
 
@@ -426,7 +419,7 @@ void main() {
           initialState: _validState,
         );
 
-        await _pumpView(tester, cubit, bloc: bloc);
+        await _pumpView(tester, cubit);
         await tester.pump();
 
         expect(find.byType(SnackBar), findsOneWidget);
