@@ -52,6 +52,10 @@ void main() {
       test('returns the amount in paisa, for storage', () {
         expect(const Salary(5000050).toPaisa(), equals(5000050));
       });
+
+      test('returns the paisa an amount typed in rupees converts to', () {
+        expect(Salary.fromRupees('500.7')?.toPaisa(), equals(50070));
+      });
     });
 
     group('format', () {
@@ -77,6 +81,22 @@ void main() {
 
       test('pads a zero paisa fraction rather than omitting it', () {
         expect(const Salary(5000000).toEditString(), equals('50000.00'));
+      });
+
+      // The reason `format` is not interchangeable here: an edit form seeded
+      // with this string must still validate against its own pre-filled value.
+      test('produces a string $Salary.fromRupees reads back unchanged', () {
+        const salaries = [
+          Salary(0),
+          Salary(5),
+          Salary(70),
+          Salary(5000000),
+          Salary(5000050),
+        ];
+
+        for (final salary in salaries) {
+          expect(Salary.fromRupees(salary.toEditString()), equals(salary));
+        }
       });
     });
   });
