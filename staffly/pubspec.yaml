@@ -9,6 +9,8 @@ environment:
 
 dependencies:
   bloc: ^9.2.1
+  employee_repository:
+    path: packages/employee_repository
   flutter:
     sdk: flutter
   flutter_bloc: ^9.1.1
