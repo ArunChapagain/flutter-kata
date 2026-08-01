@@ -34,17 +34,12 @@ class EmployeeRepository {
   final String Function() _idGenerator;
 
   /// Returns every stored employee.
-  Future<List<Employee>> fetchEmployees() async {
-    try {
-      final records = await _employeeApi.readAll();
+  Future<List<Employee>> fetchEmployees() =>
+      _translatingApiExceptions(() async {
+        final records = await _employeeApi.readAll();
 
-      return records.map(_toEmployee).toList();
-    } on EmployeeNotFoundApiException catch (e) {
-      throw EmployeeNotFoundException(e.cause);
-    } on EmployeeStorageApiException catch (e) {
-      throw EmployeeStorageException(e.cause);
-    }
-  }
+        return records.map(_toEmployee).toList();
+      });
 
   /// Stores a new employee and returns it.
   ///
@@ -64,13 +59,9 @@ class EmployeeRepository {
       salary: salary,
     );
 
-    try {
-      await _employeeApi.create(_toRecord(employee));
-    } on EmployeeNotFoundApiException catch (e) {
-      throw EmployeeNotFoundException(e.cause);
-    } on EmployeeStorageApiException catch (e) {
-      throw EmployeeStorageException(e.cause);
-    }
+    await _translatingApiExceptions(
+      () => _employeeApi.create(_toRecord(employee)),
+    );
 
     return employee;
   }
@@ -78,25 +69,27 @@ class EmployeeRepository {
   /// Overwrites the stored employee that [employee] shares an id with, and
   /// returns it.
   Future<Employee> updateEmployee(Employee employee) async {
-    try {
-      await _employeeApi.update(_toRecord(employee));
-    } on EmployeeNotFoundApiException catch (e) {
-      throw EmployeeNotFoundException(e.cause);
-    } on EmployeeStorageApiException catch (e) {
-      throw EmployeeStorageException(e.cause);
-    }
+    await _translatingApiExceptions(
+      () => _employeeApi.update(_toRecord(employee)),
+    );
 
     return employee;
   }
 
   /// Removes the stored employee with the given [id].
-  Future<void> deleteEmployee(String id) async {
+  Future<void> deleteEmployee(String id) =>
+      _translatingApiExceptions(() => _employeeApi.delete(id));
+
+  Future<T> _translatingApiExceptions<T>(Future<T> Function() action) async {
     try {
-      await _employeeApi.delete(id);
-    } on EmployeeNotFoundApiException catch (e) {
-      throw EmployeeNotFoundException(e.cause);
-    } on EmployeeStorageApiException catch (e) {
-      throw EmployeeStorageException(e.cause);
+      return await action();
+    } on EmployeeApiException catch (error) {
+      throw switch (error) {
+        EmployeeNotFoundApiException() => EmployeeNotFoundException(
+          error.cause,
+        ),
+        EmployeeStorageApiException() => EmployeeStorageException(error.cause),
+      };
     }
   }
 
