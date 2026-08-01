@@ -24,6 +24,12 @@ abstract class EmployeeApi {
   /// Throws an [EmployeeStorageApiException] if it cannot be stored.
   Future<void> create(EmployeeRecord record);
 
+  /// Returns the stored employee with the given [id].
+  ///
+  /// Throws an [EmployeeNotFoundApiException] if no employee has that id, and
+  /// an [EmployeeStorageApiException] if it cannot be read.
+  Future<EmployeeRecord> read(String id);
+
   /// Returns every stored employee.
   ///
   /// Throws an [EmployeeStorageApiException] if they cannot be read.
