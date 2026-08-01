@@ -95,5 +95,27 @@ void main() {
         expect(await subject.readAll(), isEmpty);
       });
     });
+
+    group('update', () {
+      test(
+        'overwrites every field of the record with the matching id',
+        () async {
+          await subject.open();
+          await subject.create(record);
+
+          const promoted = EmployeeRecord(
+            id: 'e1b9f0c4',
+            fullName: 'Arun Chapagain',
+            jobTitle: 'Senior Software Engineer',
+            country: 'Netherlands',
+            salaryMinorUnits: 7500000,
+          );
+
+          await subject.update(promoted);
+
+          expect(await subject.readAll(), equals([promoted]));
+        },
+      );
+    });
   });
 }
