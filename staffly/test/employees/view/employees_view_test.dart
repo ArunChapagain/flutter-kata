@@ -49,7 +49,7 @@ void main() {
     ) async {
       when(
         () => employeesBloc.state,
-      ).thenReturn(const EmployeesState(status: EmployeesStatus.loading));
+      ).thenReturn(const EmployeesState(fetchState: FetchState(status: FetchStatus.loading)));
 
       await tester.pumpApp(buildSubject());
 
@@ -61,8 +61,10 @@ void main() {
     ) async {
       when(() => employeesBloc.state).thenReturn(
         const EmployeesState(
-          status: EmployeesStatus.success,
-          employees: [arun, sam],
+          fetchState: FetchState(
+            status: FetchStatus.success,
+            employees: [arun, sam],
+          ),
         ),
       );
 
@@ -78,7 +80,7 @@ void main() {
       ) async {
         when(
           () => employeesBloc.state,
-        ).thenReturn(const EmployeesState(status: EmployeesStatus.success));
+        ).thenReturn(const EmployeesState(fetchState: FetchState(status: FetchStatus.success)));
 
         await tester.pumpApp(buildSubject());
 
@@ -92,7 +94,7 @@ void main() {
     ) async {
       when(
         () => employeesBloc.state,
-      ).thenReturn(const EmployeesState(status: EmployeesStatus.failure));
+      ).thenReturn(const EmployeesState(fetchState: FetchState(status: FetchStatus.failure)));
 
       await tester.pumpApp(buildSubject());
 
@@ -106,8 +108,10 @@ void main() {
       ) async {
         when(() => employeesBloc.state).thenReturn(
           const EmployeesState(
-            status: EmployeesStatus.success,
-            employees: [arun, sam],
+            fetchState: FetchState(
+              status: FetchStatus.success,
+              employees: [arun, sam],
+            ),
           ),
         );
 
@@ -121,8 +125,10 @@ void main() {
         (tester) async {
           when(() => employeesBloc.state).thenReturn(
             const EmployeesState(
-              status: EmployeesStatus.success,
-              employees: [arun, sam],
+              fetchState: FetchState(
+                status: FetchStatus.success,
+                employees: [arun, sam],
+              ),
             ),
           );
 
@@ -144,8 +150,10 @@ void main() {
           // State with searchQuery applied: visibleEmployees returns only [arun]
           when(() => employeesBloc.state).thenReturn(
             const EmployeesState(
-              status: EmployeesStatus.success,
-              employees: [arun, sam],
+              fetchState: FetchState(
+                status: FetchStatus.success,
+                employees: [arun, sam],
+              ),
               searchQuery: 'Arun',
             ),
           );

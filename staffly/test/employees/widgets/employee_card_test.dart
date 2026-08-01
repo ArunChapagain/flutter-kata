@@ -52,7 +52,7 @@ void main() {
       setUp(() {
         employeesBloc = _MockEmployeesBloc();
         when(() => employeesBloc.state)
-            .thenReturn(const EmployeesState(status: EmployeesStatus.success));
+            .thenReturn(const EmployeesState(fetchState: FetchState(status: FetchStatus.success)));
       });
 
       Widget buildSubject() => BlocProvider.value(

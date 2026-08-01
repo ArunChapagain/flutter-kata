@@ -22,14 +22,16 @@ void main() {
 
     group('visibleEmployees', () {
       test('returns every $Employee when the search query is empty', () {
-        const state = EmployeesState(employees: [arun, sam]);
+        const state = EmployeesState(
+          fetchState: FetchState(employees: [arun, sam]),
+        );
 
         expect(state.visibleEmployees, equals([arun, sam]));
       });
 
       test('matches a $Employee whose full name contains the query', () {
         const state = EmployeesState(
-          employees: [arun, sam],
+          fetchState: FetchState(employees: [arun, sam]),
           searchQuery: 'arun',
         );
 
@@ -38,7 +40,7 @@ void main() {
 
       test('matches a $Employee whose job title contains the query', () {
         const state = EmployeesState(
-          employees: [arun, sam],
+          fetchState: FetchState(employees: [arun, sam]),
           searchQuery: 'design',
         );
 
@@ -47,7 +49,7 @@ void main() {
 
       test('matches a $Employee whose country contains the query', () {
         const state = EmployeesState(
-          employees: [arun, sam],
+          fetchState: FetchState(employees: [arun, sam]),
           searchQuery: 'nepal',
         );
 
@@ -56,7 +58,7 @@ void main() {
 
       test('matches regardless of case or surrounding whitespace', () {
         const state = EmployeesState(
-          employees: [arun, sam],
+          fetchState: FetchState(employees: [arun, sam]),
           searchQuery: '  SAM  ',
         );
 
@@ -65,7 +67,7 @@ void main() {
 
       test('returns an empty list when nothing matches the query', () {
         const state = EmployeesState(
-          employees: [arun, sam],
+          fetchState: FetchState(employees: [arun, sam]),
           searchQuery: 'atlantis',
         );
 

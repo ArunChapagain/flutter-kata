@@ -49,15 +49,36 @@ const _validState = EmployeeUpsertState(
 // Helpers
 // ---------------------------------------------------------------------------
 
-/// Pumps [EmployeeUpsertView] with a mocked cubit.
+/// Creates a [GoRouter] for testing a standalone view that might pop.
+GoRouter _testRouterForView(Widget view) {
+  return GoRouter(
+    initialLocation: '/upsert',
+    routes: [
+      GoRoute(
+        path: '/',
+        builder: (_, _) => const Scaffold(body: Text('Home')),
+        routes: [
+          GoRoute(
+            path: 'upsert',
+            builder: (_, _) => view,
+          ),
+        ],
+      ),
+    ],
+  );
+}
+
+/// Pumps [EmployeeUpsertView] with a mocked cubit inside a routed app.
 Future<void> _pumpView(
   WidgetTester tester,
   EmployeeUpsertCubit cubit,
 ) {
-  return tester.pumpApp(
-    BlocProvider<EmployeeUpsertCubit>.value(
-      value: cubit,
-      child: const EmployeeUpsertView(),
+  return tester.pumpRouted(
+    _testRouterForView(
+      BlocProvider<EmployeeUpsertCubit>.value(
+        value: cubit,
+        child: const EmployeeUpsertView(),
+      ),
     ),
   );
 }
@@ -72,7 +93,7 @@ GoRouter _testRouter({
     routes: [
       GoRoute(
         path: Routes.home,
-        builder: (_, __) => RepositoryProvider.value(
+        builder: (_, _) => RepositoryProvider.value(
           value: employeeRepository,
           child: const EmployeesPage(),
         ),
