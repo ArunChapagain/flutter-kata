@@ -5,6 +5,8 @@ import 'package:formz/formz.dart';
 import 'package:staffly/employees/bloc/bloc.dart';
 import 'package:staffly/employees/cubit/cubit.dart';
 import 'package:staffly/employees/models/countries.dart';
+import 'package:staffly/employees/view/form_error_text.dart';
+import 'package:staffly/l10n/l10n.dart';
 
 /// {@template employee_upsert_page}
 /// The root of the add/edit employee screen.
@@ -128,6 +130,8 @@ class _FullNameInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return BlocBuilder<EmployeeUpsertCubit, EmployeeUpsertState>(
       buildWhen: (previous, current) => previous.fullName != current.fullName,
       builder: (context, state) {
@@ -138,10 +142,7 @@ class _FullNameInput extends StatelessWidget {
           initialValue: state.fullName.value,
           hintText: 'Enter full name',
           prefixIcon: Icons.person_outline,
-          errorText:
-              state.fullName.displayError != null
-                  ? 'Full name is required'
-                  : null,
+          errorText: fullNameErrorText(l10n, state.fullName.displayError),
           onChanged: (value) =>
               context.read<EmployeeUpsertCubit>().fullNameChanged(value),
         );
@@ -155,6 +156,8 @@ class _JobTitleInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return BlocBuilder<EmployeeUpsertCubit, EmployeeUpsertState>(
       buildWhen: (previous, current) => previous.jobTitle != current.jobTitle,
       builder: (context, state) {
@@ -165,10 +168,7 @@ class _JobTitleInput extends StatelessWidget {
           initialValue: state.jobTitle.value,
           hintText: 'Enter job title',
           prefixIcon: Icons.work_outline,
-          errorText:
-              state.jobTitle.displayError != null
-                  ? 'Job title is required'
-                  : null,
+          errorText: jobTitleErrorText(l10n, state.jobTitle.displayError),
           onChanged: (value) =>
               context.read<EmployeeUpsertCubit>().jobTitleChanged(value),
         );
@@ -183,6 +183,7 @@ class _CountryInput extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
     final spacing = context.appSpacing;
     final labelStyle = theme.textTheme.titleSmall;
 
@@ -205,14 +206,11 @@ class _CountryInput extends StatelessWidget {
             SizedBox(height: spacing.xs),
             DropdownButtonFormField<String>(
               key: const Key('upsertForm_country_dropdown'),
-              value: state.country.value.isEmpty ? null : state.country.value,
+              initialValue: state.country.value.isEmpty ? null : state.country.value,
               decoration: InputDecoration(
                 hintText: 'Select country',
                 prefixIcon: const Icon(Icons.public),
-                errorText:
-                    state.country.displayError != null
-                        ? 'Please select a country'
-                        : null,
+                errorText: countryErrorText(l10n, state.country.displayError),
               ),
               items: Countries.all.map((country) {
                 return DropdownMenuItem(
@@ -238,6 +236,8 @@ class _SalaryInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return BlocBuilder<EmployeeUpsertCubit, EmployeeUpsertState>(
       buildWhen: (previous, current) => previous.salary != current.salary,
       builder: (context, state) {
@@ -248,10 +248,7 @@ class _SalaryInput extends StatelessWidget {
           initialValue: state.salary.value,
           hintText: 'Enter salary',
           prefixIcon: Icons.attach_money,
-          errorText:
-              state.salary.displayError != null
-                  ? 'Enter a valid salary'
-                  : null,
+          errorText: salaryErrorText(l10n, state.salary.displayError),
           onChanged: (value) =>
               context.read<EmployeeUpsertCubit>().salaryChanged(value),
         );
