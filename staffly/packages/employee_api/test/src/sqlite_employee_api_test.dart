@@ -88,6 +88,38 @@ void main() {
       });
     });
 
+    group('read', () {
+      test('returns only the record with the matching id', () async {
+        await subject.open();
+
+        // Two records, so a `read` that ignored its argument and returned
+        // whatever came back first would still have to pick the right one.
+        const colleague = EmployeeRecord(
+          id: '7d3a1f52',
+          fullName: 'Sam Rai',
+          jobTitle: 'Designer',
+          country: 'Nepal',
+          salaryMinorUnits: 4200000,
+        );
+        await subject.create(record);
+        await subject.create(colleague);
+
+        expect(await subject.read(colleague.id), equals(colleague));
+      });
+
+      test(
+        'throws $EmployeeNotFoundApiException when no record has that id',
+        () async {
+          await subject.open();
+
+          await expectLater(
+            () => subject.read('no-such-employee'),
+            throwsA(isA<EmployeeNotFoundApiException>()),
+          );
+        },
+      );
+    });
+
     group('readAll', () {
       test('returns an empty list when nothing has been created', () async {
         await subject.open();
@@ -203,6 +235,10 @@ void main() {
 
           await expectLater(
             () => subject.create(record),
+            throwsA(isA<EmployeeStorageApiException>()),
+          );
+          await expectLater(
+            () => subject.read(record.id),
             throwsA(isA<EmployeeStorageApiException>()),
           );
           await expectLater(

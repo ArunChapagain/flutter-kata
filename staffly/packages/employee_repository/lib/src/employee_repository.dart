@@ -41,6 +41,18 @@ class EmployeeRepository {
         return records.map(_toEmployee).toList();
       });
 
+  /// Returns the stored employee with the given [id].
+  ///
+  /// Reads a single employee back from storage rather than from whatever the
+  /// list last held, so a caller that needs the persisted truth — rather than
+  /// a possibly stale copy — has a way to ask for it.
+  Future<Employee> fetchEmployee(String id) =>
+      _translatingApiExceptions(() async {
+        final record = await _employeeApi.read(id);
+
+        return _toEmployee(record);
+      });
+
   /// Stores a new employee and returns it.
   ///
   /// The id is assigned here rather than passed in: identity is a domain

@@ -81,6 +81,28 @@ class SqliteEmployeeApi implements EmployeeApi {
     if (deleted == 0) throw const EmployeeNotFoundApiException();
   }
 
+  /// As with [update], the empty result is checked outside [_guardStorage], so
+  /// an id nobody holds is reported as not-found rather than as a fault in the
+  /// store.
+  ///
+  /// `limit: 1` is redundant against a primary key and is passed anyway, so
+  /// the query states that exactly one row is wanted.
+  @override
+  Future<EmployeeRecord> read(String id) async {
+    final rows = await _guardStorage(
+      () => _database.query(
+        EmployeesTable.name,
+        where: _whereId,
+        whereArgs: [id],
+        limit: 1,
+      ),
+    );
+
+    if (rows.isEmpty) throw const EmployeeNotFoundApiException();
+
+    return EmployeeRecord.fromRow(rows.first);
+  }
+
   @override
   Future<List<EmployeeRecord>> readAll() async {
     final rows = await _guardStorage(

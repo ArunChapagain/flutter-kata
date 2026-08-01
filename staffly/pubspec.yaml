@@ -9,11 +9,15 @@ environment:
 
 dependencies:
   bloc: ^9.2.1
+  employee_repository:
+    path: packages/employee_repository
+  equatable: ^2.0.7
   flutter:
     sdk: flutter
   flutter_bloc: ^9.1.1
   flutter_localizations:
     sdk: flutter
+  formz: ^0.8.0
   intl: ^0.20.2
 
 dev_dependencies:
