@@ -1,0 +1,35 @@
+name: app_ui
+description: >-
+  Design system for Staffly — theme tokens and the shared UI primitives the
+  employees feature is assembled from.
+version: 0.1.0+1
+publish_to: none
+
+environment:
+  sdk: ^3.12.0
+  flutter: ^3.44.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  very_good_analysis: ^10.3.0
+
+flutter:
+  fonts:
+    # Bundled rather than fetched at runtime, so the app renders the design
+    # system offline and identically on every platform. Inter is licensed under
+    # the SIL Open Font License 1.1 — see lib/fonts/OFL.txt.
+    - family: Inter
+      fonts:
+        - asset: lib/fonts/Inter-Regular.ttf
+          weight: 400
+        - asset: lib/fonts/Inter-Medium.ttf
+          weight: 500
+        - asset: lib/fonts/Inter-SemiBold.ttf
+          weight: 600
+        - asset: lib/fonts/Inter-Bold.ttf
+          weight: 700

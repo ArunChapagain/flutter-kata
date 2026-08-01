@@ -8,6 +8,8 @@ environment:
   flutter: ^3.44.0
 
 dependencies:
+  app_ui:
+    path: packages/app_ui
   bloc: ^9.2.1
   employee_repository:
     path: packages/employee_repository
