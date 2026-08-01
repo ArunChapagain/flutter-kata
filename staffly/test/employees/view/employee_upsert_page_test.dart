@@ -74,7 +74,6 @@ Future<void> _pumpView(
 // ---------------------------------------------------------------------------
 
 void main() {
-
   group('$EmployeesPage — FAB', () {
     late EmployeeRepository employeeRepository;
 
@@ -116,7 +115,13 @@ void main() {
         await tester.pumpAndSettle();
 
         // In adding mode the app bar title says "Add Employee".
-        expect(find.text('Add Employee'), findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.byType(AppBar),
+            matching: find.text('Add Employee'),
+          ),
+          findsOneWidget,
+        );
       },
     );
   });
@@ -181,7 +186,6 @@ void main() {
       },
     );
   });
-
 
   group('$EmployeeUpsertView', () {
     late EmployeeUpsertCubit cubit;

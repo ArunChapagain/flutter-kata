@@ -2,6 +2,7 @@ import 'package:app_ui/app_ui.dart';
 import 'package:employee_repository/employee_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:staffly/employees/bloc/bloc.dart';
+import 'package:staffly/employees/view/view.dart';
 
 /// {@template employee_card}
 /// One row of the employee list — full name, job title, country and salary,
@@ -70,9 +71,9 @@ class EmployeeCard extends StatelessWidget {
             children: [
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () {
-                    // Edit — wired in cycle 2b.
-                  },
+                  onPressed: () => Navigator.of(context).push(
+                    EmployeeUpsertPage.route(employee: employee),
+                  ),
                   icon: const Icon(Icons.edit_outlined, size: 16),
                   label: const Text('Edit'),
                 ),

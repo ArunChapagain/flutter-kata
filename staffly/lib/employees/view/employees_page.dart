@@ -2,6 +2,7 @@ import 'package:app_ui/app_ui.dart';
 import 'package:employee_repository/employee_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:staffly/employees/bloc/bloc.dart';
+import 'package:staffly/employees/view/employee_upsert_page.dart';
 import 'package:staffly/employees/view/employees_view.dart';
 
 /// {@template employees_page}
@@ -57,6 +58,10 @@ class _Scaffold extends StatelessWidget {
         toolbarHeight: 72,
       ),
       body: const EmployeesView(),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => Navigator.of(context).push(EmployeeUpsertPage.route()),
+        child: const Icon(Icons.add),
+      ),
     );
   }
 }
