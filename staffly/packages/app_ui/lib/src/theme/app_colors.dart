@@ -38,7 +38,7 @@ abstract final class AppColors {
   static const onError = Color(0xFFFFFFFF);
 
   /// The tinted fill behind a destructive action, such as a delete button.
-  static const errorContainer = Color(0xFFFFDAD6);
+  static const errorContainer = Color(0xC5FFDAD6);
 
   /// Content drawn on top of [errorContainer].
   static const onErrorContainer = Color(0xFF93000A);
