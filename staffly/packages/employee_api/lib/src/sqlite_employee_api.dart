@@ -66,9 +66,21 @@ class SqliteEmployeeApi {
     );
   }
 
+  /// Removes the stored employee with the given [id].
+  Future<void> delete(String id) async {
+    await _database.delete(
+      'employees',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
   /// Returns every stored employee.
   Future<List<EmployeeRecord>> readAll() async {
     final rows = await _database.query('employees');
     return rows.map(EmployeeRecord.fromRow).toList();
   }
+
+  /// Releases the database. No other method may be called afterwards.
+  Future<void> close() => _database.close();
 }
