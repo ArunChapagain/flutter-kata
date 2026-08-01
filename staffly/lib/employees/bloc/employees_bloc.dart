@@ -31,19 +31,25 @@ class EmployeesBloc extends Bloc<EmployeesEvent, EmployeesState> {
     EmployeesFetchRequested event,
     Emitter<EmployeesState> emit,
   ) async {
-    emit(state.copyWith(status: EmployeesStatus.loading));
+    emit(state.copyWith(
+      fetchState: state.fetchState.copyWith(status: FetchStatus.loading),
+    ));
 
     try {
       final employees = await _employeeRepository.fetchEmployees();
 
       emit(
         state.copyWith(
-          status: EmployeesStatus.success,
-          employees: employees,
+          fetchState: state.fetchState.copyWith(
+            status: FetchStatus.success,
+            employees: employees,
+          ),
         ),
       );
     } on EmployeeRepositoryException {
-      emit(state.copyWith(status: EmployeesStatus.failure));
+      emit(state.copyWith(
+        fetchState: state.fetchState.copyWith(status: FetchStatus.failure),
+      ));
     }
   }
 
@@ -51,22 +57,33 @@ class EmployeesBloc extends Bloc<EmployeesEvent, EmployeesState> {
     EmployeesEmployeeDeleted event,
     Emitter<EmployeesState> emit,
   ) async {
+    emit(state.copyWith(
+      deleteState: state.deleteState.copyWith(
+        status: DeleteStatus.loading,
+        deletedEmployee: event.employee,
+      ),
+    ));
+
     try {
       await _employeeRepository.deleteEmployee(event.employee.id);
 
-      // Dropped locally rather than refetched: the row is gone, and a second
-      // round trip would only confirm what the repository already returned
-      // without throwing.
       emit(
         state.copyWith(
-          employees: state.employees
-              .where((employee) => employee.id != event.employee.id)
-              .toList(),
-          lastDeletedEmployee: event.employee,
+          fetchState: state.fetchState.copyWith(
+            employees: state.fetchState.employees
+                .where((employee) => employee.id != event.employee.id)
+                .toList(),
+          ),
+          deleteState: state.deleteState.copyWith(
+            status: DeleteStatus.success,
+            deletedEmployee: event.employee,
+          ),
         ),
       );
     } on EmployeeRepositoryException {
-      emit(state.copyWith(status: EmployeesStatus.failure));
+      emit(state.copyWith(
+        deleteState: state.deleteState.copyWith(status: DeleteStatus.failure),
+      ));
     }
   }
 

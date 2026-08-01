@@ -22,24 +22,44 @@ class EmployeesView extends StatelessWidget {
   Widget build(BuildContext context) {
     final spacing = context.appSpacing;
 
-    return BlocBuilder<EmployeesBloc, EmployeesState>(
+    return BlocConsumer<EmployeesBloc, EmployeesState>(
+      listenWhen: (previous, current) => previous.deleteState != current.deleteState,
+      listener: (context, state) {
+        if (state.deleteState.status == DeleteStatus.success && state.deleteState.deletedEmployee != null) {
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(
+                content: Text('${state.deleteState.deletedEmployee!.fullName} deleted'),
+              ),
+            );
+        } else if (state.deleteState.status == DeleteStatus.failure) {
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              const SnackBar(
+                content: Text('Failed to delete employee'),
+              ),
+            );
+        }
+      },
       builder: (context, state) {
-        return switch (state.status) {
-          EmployeesStatus.initial || EmployeesStatus.loading => const Center(
+        return switch (state.fetchState.status) {
+          FetchStatus.initial || FetchStatus.loading => const Center(
             child: CircularProgressIndicator(),
           ),
-          EmployeesStatus.failure => const AppEmptyState(
+          FetchStatus.failure => const AppEmptyState(
             icon: Icons.error_outline,
             title: 'Something went wrong',
             message: "We couldn't load your employees. Please try again.",
           ),
-          EmployeesStatus.success when state.employees.isEmpty =>
+          FetchStatus.success when state.fetchState.employees.isEmpty =>
             const AppEmptyState(
               icon: Icons.people_outline,
               title: 'No employees yet',
               message: 'Add your first employee to get started.',
             ),
-          EmployeesStatus.success => Column(
+          FetchStatus.success => Column(
             children: [
               _SearchField(query: state.searchQuery),
               Expanded(

@@ -1,56 +1,78 @@
 part of 'employees_bloc.dart';
 
 /// Where the employee list currently stands.
-enum EmployeesStatus {
-  /// Nothing has been asked for yet.
-  initial,
+enum FetchStatus { initial, loading, success, failure }
 
-  /// A read or a write is in flight.
-  loading,
+class FetchState extends Equatable {
+  const FetchState({
+    this.status = FetchStatus.initial,
+    this.employees = const [],
+  });
 
-  /// The list reflects storage.
-  success,
+  final FetchStatus status;
+  final List<Employee> employees;
 
-  /// The last operation failed. Whatever was already loaded is still shown.
-  failure,
+  FetchState copyWith({
+    FetchStatus? status,
+    List<Employee>? employees,
+  }) {
+    return FetchState(
+      status: status ?? this.status,
+      employees: employees ?? this.employees,
+    );
+  }
+
+  @override
+  List<Object?> get props => [status, employees];
+}
+
+/// Where the deletion of an employee currently stands.
+enum DeleteStatus { initial, loading, success, failure }
+
+class DeleteState extends Equatable {
+  const DeleteState({
+    this.status = DeleteStatus.initial,
+    this.deletedEmployee,
+  });
+
+  final DeleteStatus status;
+  final Employee? deletedEmployee;
+
+  DeleteState copyWith({
+    DeleteStatus? status,
+    Employee? deletedEmployee,
+  }) {
+    return DeleteState(
+      status: status ?? this.status,
+      deletedEmployee: deletedEmployee ?? this.deletedEmployee,
+    );
+  }
+
+  @override
+  List<Object?> get props => [status, deletedEmployee];
 }
 
 /// {@template employees_state}
 /// Everything the employee list screen needs to render itself.
-///
-/// One class with a [status] rather than a state per phase, because every
-/// phase carries the same list: a failed delete still has employees to show,
-/// and a reload should not blank the screen it is refreshing.
 /// {@endtemplate}
 final class EmployeesState extends Equatable {
   /// {@macro employees_state}
   const EmployeesState({
-    this.status = EmployeesStatus.initial,
-    this.employees = const [],
+    this.fetchState = const FetchState(),
+    this.deleteState = const DeleteState(),
     this.searchQuery = '',
-    this.lastDeletedEmployee,
   });
 
-  /// Where the list currently stands.
-  final EmployeesStatus status;
-
-  /// The employees last read from storage, minus any since deleted.
-  final List<Employee> employees;
-
-  /// What the user has typed into the search field.
+  final FetchState fetchState;
+  final DeleteState deleteState;
   final String searchQuery;
-
-  /// The employee removed by the most recent successful deletion.
-  ///
-  /// Held so the deletion can be announced — and, eventually, undone.
-  final Employee? lastDeletedEmployee;
 
   /// [employees], narrowed to those matching [searchQuery].
   List<Employee> get visibleEmployees {
     final query = searchQuery.trim().toLowerCase();
-    if (query.isEmpty) return employees;
+    if (query.isEmpty) return fetchState.employees;
 
-    return employees
+    return fetchState.employees
         .where(
           (employee) =>
               employee.fullName.toLowerCase().contains(query) ||
@@ -62,24 +84,21 @@ final class EmployeesState extends Equatable {
 
   /// Returns a copy of this state with the given fields replaced.
   EmployeesState copyWith({
-    EmployeesStatus? status,
-    List<Employee>? employees,
+    FetchState? fetchState,
+    DeleteState? deleteState,
     String? searchQuery,
-    Employee? lastDeletedEmployee,
   }) {
     return EmployeesState(
-      status: status ?? this.status,
-      employees: employees ?? this.employees,
+      fetchState: fetchState ?? this.fetchState,
+      deleteState: deleteState ?? this.deleteState,
       searchQuery: searchQuery ?? this.searchQuery,
-      lastDeletedEmployee: lastDeletedEmployee ?? this.lastDeletedEmployee,
     );
   }
 
   @override
   List<Object?> get props => [
-    status,
-    employees,
+    fetchState,
+    deleteState,
     searchQuery,
-    lastDeletedEmployee,
   ];
 }

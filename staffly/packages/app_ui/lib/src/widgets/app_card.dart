@@ -23,7 +23,7 @@ class AppCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final onTap = this.onTap;
     final content = Padding(
-      padding: EdgeInsets.all(context.appSpacing.md),
+      padding: EdgeInsets.all(context.appSpacing.xs),
       child: child,
     );
 
