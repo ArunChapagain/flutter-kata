@@ -73,6 +73,26 @@ void main() {
       );
     });
 
+    group('fetchEmployee', () {
+      test(
+        'returns the stored $Employee, reading the paisa column back as a '
+        '$Salary',
+        () async {
+          when(() => employeeApi.read(any())).thenAnswer((_) async => record);
+
+          expect(await subject.fetchEmployee(id), equals(employee));
+        },
+      );
+
+      test('asks the api for the id it was given', () async {
+        when(() => employeeApi.read(any())).thenAnswer((_) async => record);
+
+        await subject.fetchEmployee(id);
+
+        verify(() => employeeApi.read(id)).called(1);
+      });
+    });
+
     group('createEmployee', () {
       test(
         'returns the created $Employee, identified by the generator',
@@ -192,12 +212,19 @@ void main() {
         'cannot find the employee',
         () async {
           when(
+            () => employeeApi.read(any()),
+          ).thenThrow(const EmployeeNotFoundApiException(cause));
+          when(
             () => employeeApi.update(any()),
           ).thenThrow(const EmployeeNotFoundApiException(cause));
           when(
             () => employeeApi.delete(any()),
           ).thenThrow(const EmployeeNotFoundApiException(cause));
 
+          await expectLater(
+            () => subject.fetchEmployee(id),
+            throwsA(isA<EmployeeNotFoundException>()),
+          );
           await expectLater(
             () => subject.updateEmployee(employee),
             throwsA(isA<EmployeeNotFoundException>()),
@@ -217,6 +244,9 @@ void main() {
             employeeApi.readAll,
           ).thenThrow(const EmployeeStorageApiException(cause));
           when(
+            () => employeeApi.read(any()),
+          ).thenThrow(const EmployeeStorageApiException(cause));
+          when(
             () => employeeApi.create(any()),
           ).thenThrow(const EmployeeStorageApiException(cause));
           when(
@@ -228,6 +258,10 @@ void main() {
 
           await expectLater(
             subject.fetchEmployees,
+            throwsA(isA<EmployeeStorageException>()),
+          );
+          await expectLater(
+            () => subject.fetchEmployee(id),
             throwsA(isA<EmployeeStorageException>()),
           );
           await expectLater(create, throwsA(isA<EmployeeStorageException>()));
