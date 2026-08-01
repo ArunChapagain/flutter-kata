@@ -117,5 +117,35 @@ void main() {
         },
       );
     });
+
+    group('delete', () {
+      test('removes only the record with the matching id', () async {
+        await subject.open();
+
+        const colleague = EmployeeRecord(
+          id: '7d3a1f52',
+          fullName: 'Sam Rai',
+          jobTitle: 'Designer',
+          country: 'Nepal',
+          salaryMinorUnits: 4200000,
+        );
+        await subject.create(record);
+        await subject.create(colleague);
+
+        await subject.delete(record.id);
+
+        expect(await subject.readAll(), equals([colleague]));
+      });
+    });
+
+    group('close', () {
+      test('releases the underlying database', () async {
+        await subject.open();
+
+        await subject.close();
+
+        expect(database.isOpen, isFalse);
+      });
+    });
   });
 }
