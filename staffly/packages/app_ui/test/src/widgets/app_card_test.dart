@@ -41,5 +41,23 @@ void main() {
         expect(find.byType(InkWell), findsNothing);
       });
     });
+
+    group('shape', () {
+      testWidgets('applies the given shape to the Card', (tester) async {
+        const shape = RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(16)),
+        );
+
+        await tester.pumpApp(
+          const AppCard(
+            shape: shape,
+            child: Text('Jane Doe'),
+          ),
+        );
+
+        final card = tester.widget<Card>(find.byType(Card));
+        expect(card.shape, equals(shape));
+      });
+    });
   });
 }
