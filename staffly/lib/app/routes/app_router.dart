@@ -1,4 +1,3 @@
-import 'package:employee_repository/employee_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:staffly/app/routes/routes.dart';
@@ -20,10 +19,15 @@ final router = GoRouter(
     ),
     GoRoute(
       path: Routes.upsert,
+      builder: (_, _) => const EmployeeUpsertPage(),
+    ),
+    GoRoute(
+      path: Routes.upsertEditTemplate,
       builder: (_, state) {
-        final employee = state.extra as Employee?;
-        return EmployeeUpsertPage(employee: employee);
+        final employeeId = state.pathParameters['employeeId']!;
+        return EmployeeUpsertPage(employeeId: employeeId);
       },
     ),
   ],
 );
+

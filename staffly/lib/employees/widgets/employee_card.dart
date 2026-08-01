@@ -86,8 +86,7 @@ class EmployeeCard extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: () async {
                     final didChange = await context.push<bool>(
-                      Routes.upsert,
-                      extra: employee,
+                      Routes.upsertEdit(employee.id),
                     );
                     if (didChange == true && context.mounted) {
                       context.read<EmployeesBloc>().add(

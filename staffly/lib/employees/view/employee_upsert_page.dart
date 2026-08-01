@@ -3,6 +3,7 @@ import 'package:employee_repository/employee_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
 import 'package:go_router/go_router.dart';
+import 'package:staffly/employees/bloc/bloc.dart';
 import 'package:staffly/employees/cubit/cubit.dart';
 import 'package:staffly/employees/models/countries.dart';
 import 'package:staffly/employees/view/form_error_text.dart';
@@ -11,24 +12,154 @@ import 'package:staffly/l10n/l10n.dart';
 /// {@template employee_upsert_page}
 /// The root of the add/edit employee screen.
 ///
-/// Owns the [EmployeeUpsertCubit] lifetime and provides it to the view.
-/// Accepts an optional [employee] to edit; if null, creates a new employee.
+/// When [employeeId] is provided, a [FetchEmployeeBloc] is created to load the
+/// employee from storage, and a loading indicator is shown until the fetch
+/// completes. The fetched employee is then used to seed [EmployeeUpsertCubit].
+///
+/// When [employeeId] is null the page opens immediately as an "add new"
+/// form, backed by an empty [EmployeeUpsertCubit].
 /// {@endtemplate}
 class EmployeeUpsertPage extends StatelessWidget {
   /// {@macro employee_upsert_page}
-  const EmployeeUpsertPage({this.employee, super.key});
+  const EmployeeUpsertPage({this.employeeId, super.key});
 
-  /// The employee to edit, or null to create a new one.
-  final Employee? employee;
+  /// The id of the employee to edit, or null to create a new one.
+  ///
+  /// Received as a path parameter from the router so the route is
+  /// deeplink-safe — no [Employee] object needs to travel through the
+  /// navigation stack.
+  final String? employeeId;
 
   @override
   Widget build(BuildContext context) {
+    final id = employeeId;
+
+    // ── Create flow ──────────────────────────────────────────────────────────
+    if (id == null) {
+      return BlocProvider(
+        create: (context) => EmployeeUpsertCubit(
+          employeeRepository: context.read<EmployeeRepository>(),
+        ),
+        child: const EmployeeUpsertView(),
+      );
+    }
+
+    // ── Edit flow ────────────────────────────────────────────────────────────
+    // Provide FetchEmployeeBloc; it auto-fetches on creation.
+    // _EditLoader listens and swaps to EmployeeUpsertView once data arrives.
     return BlocProvider(
-      create: (context) => EmployeeUpsertCubit(
+      create: (context) => FetchEmployeeBloc(
+        employeeId: id,
         employeeRepository: context.read<EmployeeRepository>(),
-        initialEmployee: employee,
       ),
-      child: const EmployeeUpsertView(),
+      child: const _EditLoader(),
+    );
+  }
+}
+
+/// Listens to [FetchEmployeeBloc] and builds the right widget for each state.
+class _EditLoader extends StatelessWidget {
+  const _EditLoader();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<FetchEmployeeBloc, FetchEmployeeState>(
+      builder: (context, state) {
+        return switch (state) {
+          FetchEmployeeInitial() ||
+          FetchEmployeeLoading() => const _LoadingScaffold(),
+          FetchEmployeeSuccess(:final employee) => BlocProvider(
+            key: ValueKey(employee.id),
+            create: (context) => EmployeeUpsertCubit(
+              employeeRepository: context.read<EmployeeRepository>(),
+              initialEmployee: employee,
+            ),
+            child: const EmployeeUpsertView(),
+          ),
+          FetchEmployeeFailure() => const _FailureScaffold(),
+        };
+      },
+    );
+  }
+}
+
+/// Full-screen loading indicator shown while [FetchEmployeeBloc] is in flight.
+class _LoadingScaffold extends StatelessWidget {
+  const _LoadingScaffold();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+          onPressed: () => context.pop(),
+        ),
+        title: Text(
+          'Edit Employee',
+          style: theme.textTheme.titleLarge?.copyWith(
+            color: theme.colorScheme.primary,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        centerTitle: false,
+        toolbarHeight: 72,
+      ),
+      body: const Center(child: CircularProgressIndicator()),
+    );
+  }
+}
+
+/// Error screen shown when [FetchEmployeeBloc] fails.
+class _FailureScaffold extends StatelessWidget {
+  const _FailureScaffold();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+          onPressed: () => context.pop(),
+        ),
+        title: Text(
+          'Edit Employee',
+          style: theme.textTheme.titleLarge?.copyWith(
+            color: theme.colorScheme.primary,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        centerTitle: false,
+        toolbarHeight: 72,
+      ),
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.error_outline,
+              size: 48,
+              color: theme.colorScheme.error,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Could not load employee.',
+              style: theme.textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            FilledButton.tonal(
+              onPressed: () => context.read<FetchEmployeeBloc>().add(
+                const FetchEmployeeRequested(),
+              ),
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -275,7 +406,7 @@ class _BottomBar extends StatelessWidget {
             color: theme.colorScheme.surface,
             border: Border(
               top: BorderSide(
-                color: theme.colorScheme.outline.withOpacity(0.2),
+                color: theme.colorScheme.outline.withValues(alpha: 0.2),
               ),
             ),
           ),
@@ -289,7 +420,9 @@ class _BottomBar extends StatelessWidget {
                       'Back',
                       style: theme.textTheme.labelLarge?.copyWith(
                         color: isSubmitting
-                            ? theme.colorScheme.onSurface.withOpacity(0.38)
+                            ? theme.colorScheme.onSurface.withValues(
+                                alpha: 0.38,
+                              )
                             : theme.colorScheme.primary,
                         fontWeight: FontWeight.w600,
                       ),
