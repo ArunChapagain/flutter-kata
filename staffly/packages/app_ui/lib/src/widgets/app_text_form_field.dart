@@ -18,6 +18,7 @@ class AppTextFormField extends StatelessWidget {
     this.errorText,
     this.initialValue,
     this.onChanged,
+    this.keyboardType,
     this.enabled = true,
     this.isRequired = false,
     super.key,
@@ -47,6 +48,9 @@ class AppTextFormField extends StatelessWidget {
   /// Whether to mark the label as required.
   final bool isRequired;
 
+  /// The type of keyboard to use for the text field.
+  final TextInputType? keyboardType;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -73,6 +77,7 @@ class AppTextFormField extends StatelessWidget {
           initialValue: initialValue,
           enabled: enabled,
           onChanged: onChanged,
+          keyboardType: keyboardType,
           decoration: InputDecoration(
             hintText: hintText,
             errorText: errorText,

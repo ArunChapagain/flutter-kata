@@ -54,7 +54,6 @@ class EmployeeUpsertView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final spacing = context.appSpacing;
     final isEditing = context.select(
       (EmployeeUpsertCubit cubit) => cubit.state.isEditing,
     );
@@ -80,7 +79,7 @@ class EmployeeUpsertView extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios_new, size: 20),
+            icon: const Icon(Icons.arrow_back_ios_new, size: 20),
             onPressed: () => Navigator.of(context).pop(),
           ),
           title: Text(
@@ -206,7 +205,9 @@ class _CountryInput extends StatelessWidget {
             SizedBox(height: spacing.xs),
             DropdownButtonFormField<String>(
               key: const Key('upsertForm_country_dropdown'),
-              initialValue: state.country.value.isEmpty ? null : state.country.value,
+              initialValue: state.country.value.isEmpty
+                  ? null
+                  : state.country.value,
               decoration: InputDecoration(
                 hintText: 'Select country',
                 prefixIcon: const Icon(Icons.public),
@@ -243,6 +244,7 @@ class _SalaryInput extends StatelessWidget {
       builder: (context, state) {
         return AppTextFormField(
           key: const Key('upsertForm_salary_textField'),
+          keyboardType: .number,
           label: 'Salary',
           isRequired: true,
           initialValue: state.salary.value,
@@ -267,7 +269,8 @@ class _BottomBar extends StatelessWidget {
 
     return BlocBuilder<EmployeeUpsertCubit, EmployeeUpsertState>(
       buildWhen: (previous, current) =>
-          previous.status != current.status || previous.isValid != current.isValid,
+          previous.status != current.status ||
+          previous.isValid != current.isValid,
       builder: (context, state) {
         final isSubmitting = state.status.isInProgress;
         final isValid = state.isValid;
@@ -288,7 +291,9 @@ class _BottomBar extends StatelessWidget {
               children: [
                 Expanded(
                   child: TextButton(
-                    onPressed: isSubmitting ? null : () => Navigator.of(context).pop(),
+                    onPressed: isSubmitting
+                        ? null
+                        : () => Navigator.of(context).pop(),
                     child: Text(
                       'Back',
                       style: theme.textTheme.labelLarge?.copyWith(
