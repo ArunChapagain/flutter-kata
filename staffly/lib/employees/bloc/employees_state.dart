@@ -27,6 +27,7 @@ final class EmployeesState extends Equatable {
   const EmployeesState({
     this.status = EmployeesStatus.initial,
     this.employees = const [],
+    this.searchQuery = '',
     this.lastDeletedEmployee,
   });
 
@@ -36,24 +37,49 @@ final class EmployeesState extends Equatable {
   /// The employees last read from storage, minus any since deleted.
   final List<Employee> employees;
 
+  /// What the user has typed into the search field.
+  final String searchQuery;
+
   /// The employee removed by the most recent successful deletion.
   ///
   /// Held so the deletion can be announced — and, eventually, undone.
   final Employee? lastDeletedEmployee;
 
+  /// [employees], narrowed to those matching [searchQuery].
+  List<Employee> get visibleEmployees {
+    final query = searchQuery.trim().toLowerCase();
+    if (query.isEmpty) return employees;
+
+    return employees
+        .where(
+          (employee) =>
+              employee.fullName.toLowerCase().contains(query) ||
+              employee.jobTitle.toLowerCase().contains(query) ||
+              employee.country.toLowerCase().contains(query),
+        )
+        .toList();
+  }
+
   /// Returns a copy of this state with the given fields replaced.
   EmployeesState copyWith({
     EmployeesStatus? status,
     List<Employee>? employees,
+    String? searchQuery,
     Employee? lastDeletedEmployee,
   }) {
     return EmployeesState(
       status: status ?? this.status,
       employees: employees ?? this.employees,
+      searchQuery: searchQuery ?? this.searchQuery,
       lastDeletedEmployee: lastDeletedEmployee ?? this.lastDeletedEmployee,
     );
   }
 
   @override
-  List<Object?> get props => [status, employees, lastDeletedEmployee];
+  List<Object?> get props => [
+    status,
+    employees,
+    searchQuery,
+    lastDeletedEmployee,
+  ];
 }

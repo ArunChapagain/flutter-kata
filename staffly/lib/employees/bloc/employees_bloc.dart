@@ -22,6 +22,7 @@ class EmployeesBloc extends Bloc<EmployeesEvent, EmployeesState> {
     : super(const EmployeesState()) {
     on<EmployeesFetchRequested>(_onFetchRequested);
     on<EmployeesEmployeeDeleted>(_onEmployeeDeleted);
+    on<EmployeesSearchQueryChanged>(_onSearchQueryChanged);
   }
 
   final EmployeeRepository _employeeRepository;
@@ -67,5 +68,12 @@ class EmployeesBloc extends Bloc<EmployeesEvent, EmployeesState> {
     } on EmployeeRepositoryException {
       emit(state.copyWith(status: EmployeesStatus.failure));
     }
+  }
+
+  void _onSearchQueryChanged(
+    EmployeesSearchQueryChanged event,
+    Emitter<EmployeesState> emit,
+  ) {
+    emit(state.copyWith(searchQuery: event.query));
   }
 }
