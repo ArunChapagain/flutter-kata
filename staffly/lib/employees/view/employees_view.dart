@@ -24,14 +24,18 @@ class EmployeesView extends StatelessWidget {
     final spacing = context.appSpacing;
 
     return BlocConsumer<EmployeesBloc, EmployeesState>(
-      listenWhen: (previous, current) => previous.deleteState != current.deleteState,
+      listenWhen: (previous, current) =>
+          previous.deleteState != current.deleteState,
       listener: (context, state) {
-        if (state.deleteState.status == DeleteStatus.success && state.deleteState.deletedEmployee != null) {
+        if (state.deleteState.status == DeleteStatus.success &&
+            state.deleteState.deletedEmployee != null) {
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
             ..showSnackBar(
               SnackBar(
-                content: Text('${state.deleteState.deletedEmployee!.fullName} deleted'),
+                content: Text(
+                  '${state.deleteState.deletedEmployee!.fullName} deleted',
+                ),
               ),
             );
         } else if (state.deleteState.status == DeleteStatus.failure) {
@@ -63,16 +67,25 @@ class EmployeesView extends StatelessWidget {
           FetchStatus.success => Column(
             children: [
               _SearchField(query: state.searchQuery),
-              Expanded(
-                child: ListView.separated(
-                  padding: EdgeInsets.all(spacing.md),
-                  itemCount: state.visibleEmployees.length,
-                  separatorBuilder: (context, index) =>
-                      SizedBox(height: spacing.sm),
-                  itemBuilder: (context, index) =>
-                      EmployeeCard(employee: state.visibleEmployees[index]),
+              if (state.visibleEmployees.isEmpty)
+                const Expanded(
+                  child: AppEmptyState(
+                    icon: Icons.search_off,
+                    title: 'No results found',
+                    message: 'No employees match your search query.',
+                  ),
+                )
+              else
+                Expanded(
+                  child: ListView.separated(
+                    padding: EdgeInsets.all(spacing.md),
+                    itemCount: state.visibleEmployees.length,
+                    separatorBuilder: (context, index) =>
+                        SizedBox(height: spacing.sm),
+                    itemBuilder: (context, index) =>
+                        EmployeeCard(employee: state.visibleEmployees[index]),
+                  ),
                 ),
-              ),
             ],
           ),
         };
