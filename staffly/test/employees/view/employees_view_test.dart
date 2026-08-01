@@ -33,6 +33,10 @@ void main() {
 
     late EmployeesBloc employeesBloc;
 
+    setUpAll(() {
+      registerFallbackValue(const EmployeesSearchQueryChanged(query: ''));
+    });
+
     setUp(() {
       employeesBloc = _MockEmployeesBloc();
     });
@@ -94,6 +98,65 @@ void main() {
 
       expect(find.byType(AppEmptyState), findsOneWidget);
       expect(find.text('Something went wrong'), findsOneWidget);
+    });
+
+    group('search field', () {
+      testWidgets('renders a search field when the list has loaded', (
+        tester,
+      ) async {
+        when(() => employeesBloc.state).thenReturn(
+          const EmployeesState(
+            status: EmployeesStatus.success,
+            employees: [arun, sam],
+          ),
+        );
+
+        await tester.pumpApp(buildSubject());
+
+        expect(find.byType(TextField), findsOneWidget);
+      });
+
+      testWidgets(
+        'dispatches $EmployeesSearchQueryChanged when the user types',
+        (tester) async {
+          when(() => employeesBloc.state).thenReturn(
+            const EmployeesState(
+              status: EmployeesStatus.success,
+              employees: [arun, sam],
+            ),
+          );
+
+          await tester.pumpApp(buildSubject());
+
+          await tester.enterText(find.byType(TextField), 'Arun');
+
+          verify(
+            () => employeesBloc.add(
+              const EmployeesSearchQueryChanged(query: 'Arun'),
+            ),
+          ).called(1);
+        },
+      );
+
+      testWidgets(
+        'renders only employees matching the search query (visibleEmployees)',
+        (tester) async {
+          // State with searchQuery applied: visibleEmployees returns only [arun]
+          when(() => employeesBloc.state).thenReturn(
+            const EmployeesState(
+              status: EmployeesStatus.success,
+              employees: [arun, sam],
+              searchQuery: 'Arun',
+            ),
+          );
+
+          await tester.pumpApp(buildSubject());
+
+          // Only Arun's card should render; Sam's should not
+          expect(find.text(arun.fullName), findsOneWidget);
+          expect(find.text(sam.fullName), findsNothing);
+        },
+      );
     });
   });
 }
