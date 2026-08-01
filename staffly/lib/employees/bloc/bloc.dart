@@ -2,3 +2,5 @@
 ///
 /// Fetching and deletion live here; writes belong to `EmployeeUpsertCubit`.
 library;
+
+export 'employees_bloc.dart';
