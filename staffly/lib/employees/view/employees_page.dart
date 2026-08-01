@@ -59,8 +59,12 @@ class _Scaffold extends StatelessWidget {
       ),
       body: const EmployeesView(),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: Theme.of(context).primaryColor,
         onPressed: () => Navigator.of(context).push(EmployeeUpsertPage.route()),
-        child: const Icon(Icons.add),
+        child: Icon(
+          Icons.add,
+          color: Theme.of(context).colorScheme.onPrimary,
+        ),
       ),
     );
   }
