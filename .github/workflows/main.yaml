@@ -20,6 +20,17 @@ jobs:
       run_bloc_lint: true
       working_directory: staffly
 
+  packages:
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - employee_api
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/dart_package.yml@v1
+    with:
+      run_bloc_lint: false
+      working_directory: staffly/packages/${{ matrix.package }}
+
   spell-check:
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/spell_check.yml@v1
     with:

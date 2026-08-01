@@ -1,17 +1,31 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-echo "▶ Running dart format..."
-dart format .
+# This hook verifies and fails. It must never format, fix, stage or commit:
 
-echo "▶ Running dart fix --apply..."
-dart fix --apply
+# Git runs hooks from the repository root, but the Dart workspace lives one
+# level above this hook. Resolve it so the checks are independent of the CWD.
+APP_DIR="$(cd "$(dirname -- "$0")/.." && pwd)" || exit 1
+cd "$APP_DIR" || exit 1
 
-git add -u
+fail() {
+  echo ""
+  echo "❌ $1"
+  echo "   $2"
+  exit 1
+}
 
-if ! git diff-index --quiet HEAD --; then
-  git commit -m "fix(husky): run dart format and dart fix"
-fi
+echo "▶ Checking formatting..."
+dart format --output=none --set-exit-if-changed . ||
+  fail "Formatting check failed." "Fix with: cd staffly && dart format ."
+
+echo "▶ Analyzing..."
+dart analyze --fatal-infos ||
+  fail "Analysis found issues." "Fix them in place, then push again."
+
+echo "▶ Running tests..."
+very_good test --recursive ||
+  fail "Tests failed." "A pushed commit must be green. Fix the failures first."
 
 echo "✅ All checks passed."
 exit 0
