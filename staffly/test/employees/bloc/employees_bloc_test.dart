@@ -27,8 +27,10 @@ void main() {
     // Seeded wherever a test needs the list already on screen, so the
     // assertions can speak about what deletion does to it.
     const listed = EmployeesState(
-      status: EmployeesStatus.success,
-      employees: [arun, sam],
+      fetchState: FetchState(
+        status: FetchStatus.success,
+        employees: [arun, sam],
+      ),
     );
 
     late EmployeeRepository employeeRepository;
@@ -55,7 +57,9 @@ void main() {
         build: buildBloc,
         act: (bloc) => bloc.add(const EmployeesFetchRequested()),
         expect: () => const [
-          EmployeesState(status: EmployeesStatus.loading),
+          EmployeesState(
+            fetchState: FetchState(status: FetchStatus.loading),
+          ),
           listed,
         ],
         verify: (_) {
@@ -73,8 +77,12 @@ void main() {
         build: buildBloc,
         act: (bloc) => bloc.add(const EmployeesFetchRequested()),
         expect: () => const [
-          EmployeesState(status: EmployeesStatus.loading),
-          EmployeesState(status: EmployeesStatus.failure),
+          EmployeesState(
+            fetchState: FetchState(status: FetchStatus.loading),
+          ),
+          EmployeesState(
+            fetchState: FetchState(status: FetchStatus.failure),
+          ),
         ],
       );
     });
@@ -93,9 +101,24 @@ void main() {
         act: (bloc) => bloc.add(const EmployeesEmployeeDeleted(employee: arun)),
         expect: () => const [
           EmployeesState(
-            status: EmployeesStatus.success,
-            employees: [sam],
-            lastDeletedEmployee: arun,
+            fetchState: FetchState(
+              status: FetchStatus.success,
+              employees: [arun, sam],
+            ),
+            deleteState: DeleteState(
+              status: DeleteStatus.loading,
+              deletedEmployee: arun,
+            ),
+          ),
+          EmployeesState(
+            fetchState: FetchState(
+              status: FetchStatus.success,
+              employees: [sam],
+            ),
+            deleteState: DeleteState(
+              status: DeleteStatus.success,
+              deletedEmployee: arun,
+            ),
           ),
         ],
         verify: (_) {
@@ -115,8 +138,44 @@ void main() {
         act: (bloc) => bloc.add(const EmployeesEmployeeDeleted(employee: arun)),
         expect: () => const [
           EmployeesState(
-            status: EmployeesStatus.failure,
-            employees: [arun, sam],
+            fetchState: FetchState(
+              status: FetchStatus.success,
+              employees: [arun, sam],
+            ),
+            deleteState: DeleteState(
+              status: DeleteStatus.loading,
+              deletedEmployee: arun,
+            ),
+          ),
+          EmployeesState(
+            fetchState: FetchState(
+              status: FetchStatus.success,
+              employees: [arun, sam],
+            ),
+            deleteState: DeleteState(
+              status: DeleteStatus.failure,
+              deletedEmployee: arun,
+            ),
+          ),
+        ],
+      );
+    });
+
+    group('$EmployeesSearchQueryChanged', () {
+      blocTest<EmployeesBloc, EmployeesState>(
+        'holds the typed query in state, so $EmployeesState.visibleEmployees '
+        'can narrow the list by it',
+        build: buildBloc,
+        seed: () => listed,
+        act: (bloc) =>
+            bloc.add(const EmployeesSearchQueryChanged(query: 'sam')),
+        expect: () => const [
+          EmployeesState(
+            fetchState: FetchState(
+              status: FetchStatus.success,
+              employees: [arun, sam],
+            ),
+            searchQuery: 'sam',
           ),
         ],
       );

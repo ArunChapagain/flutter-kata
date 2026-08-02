@@ -41,5 +41,19 @@ void main() {
         );
       },
     );
+
+    test(
+      'compares an $EmployeesSearchQueryChanged by the query it carries',
+      () {
+        expect(
+          const EmployeesSearchQueryChanged(query: 'arun').props,
+          equals(['arun']),
+        );
+        expect(
+          const EmployeesSearchQueryChanged(query: 'arun'),
+          isNot(equals(const EmployeesSearchQueryChanged(query: 'sam'))),
+        );
+      },
+    );
   });
 }

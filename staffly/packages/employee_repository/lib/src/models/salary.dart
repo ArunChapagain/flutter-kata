@@ -52,22 +52,19 @@ class Salary extends Equatable {
   /// The amount in whole paisa, as the api stores it.
   int toPaisa() => _paisa;
 
-  /// The amount as rupees for display, grouped for [locale].
+  /// The amount as rupees for display, grouped and with currency symbol for [locale].
   ///
-  /// The paisa fraction appears only when there is one: `'50,000.50'`, but
-  /// `'50,000'` for a whole number of rupees.
+  /// The paisa fraction appears only when there is one: `'$50,000.50'`, but
+  /// `'$50,000'` for a whole number of rupees.
   ///
   /// Not for a text field — see [toEditString].
   String format({String? locale}) {
-    final numberFormat = NumberFormat.decimalPattern(locale);
-    final grouped = numberFormat.format(_paisa ~/ 100);
-
     final paisa = _paisa % 100;
-    if (paisa == 0) return grouped;
-
-    return '$grouped'
-        '${numberFormat.symbols.DECIMAL_SEP}'
-        '${paisa.toString().padLeft(2, '0')}';
+    final numberFormat = NumberFormat.simpleCurrency(
+      locale: locale,
+      decimalDigits: paisa == 0 ? 0 : 2,
+    );
+    return numberFormat.format(_paisa / 100);
   }
 
   /// The amount as rupees for seeding a `TextEditingController`.

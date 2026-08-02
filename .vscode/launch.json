@@ -8,7 +8,7 @@
       "name": "Launch development",
       "request": "launch",
       "type": "dart",
-      "program": "lib/main_development.dart",
+      "program": "staffly/lib/main_development.dart",
       "args": [
         "--flavor",
         "development",
@@ -20,14 +20,14 @@
       "name": "Launch staging",
       "request": "launch",
       "type": "dart",
-      "program": "lib/main_staging.dart",
+      "program": "staffly/lib/main_staging.dart",
       "args": ["--flavor", "staging", "--target", "lib/main_staging.dart"]
     },
     {
       "name": "Launch production",
       "request": "launch",
       "type": "dart",
-      "program": "lib/main_production.dart",
+      "program": "staffly/lib/main_production.dart",
       "args": ["--flavor", "production", "--target", "lib/main_production.dart"]
     }
   ]

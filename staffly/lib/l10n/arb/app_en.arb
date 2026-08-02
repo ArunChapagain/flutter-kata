@@ -1,3 +1,10 @@
 {
-    "@@locale": "en"
+    "@@locale": "en",
+    "validationRequired": "This field is required",
+    "validationFullNameRequired": "Full name is required",
+    "validationJobTitleRequired": "Job title is required",
+    "validationCountryRequired": "Please select a country",
+    "validationCountryUnknown": "Please select a valid country",
+    "validationSalaryRequired": "Enter a valid salary",
+    "validationSalaryInvalid": "Enter a valid salary"
 }

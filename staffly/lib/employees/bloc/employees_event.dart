@@ -43,3 +43,21 @@ final class EmployeesEmployeeDeleted extends EmployeesEvent {
   @override
   List<Object?> get props => [employee];
 }
+
+/// {@template employees_search_query_changed}
+/// The user typed [query] into the search field.
+///
+/// Filtering happens locally against the list already in memory — see
+/// [EmployeesState.visibleEmployees] — so this only ever updates state, and
+/// never asks the repository for anything.
+/// {@endtemplate}
+final class EmployeesSearchQueryChanged extends EmployeesEvent {
+  /// {@macro employees_search_query_changed}
+  const EmployeesSearchQueryChanged({required this.query});
+
+  /// What the user has typed so far.
+  final String query;
+
+  @override
+  List<Object?> get props => [query];
+}

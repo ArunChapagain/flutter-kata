@@ -1,24 +1,27 @@
-import 'package:flutter/material.dart';
+import 'package:app_ui/app_ui.dart';
+import 'package:employee_repository/employee_repository.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:staffly/app/routes/app_router.dart';
 import 'package:staffly/l10n/l10n.dart';
 
 class App extends StatelessWidget {
-  const App({super.key});
+  const App({
+    required this._employeeRepository,
+    super.key,
+  });
+
+  final EmployeeRepository _employeeRepository;
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(
-        appBarTheme: AppBarTheme(
-          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        ),
-        useMaterial3: true,
+    return RepositoryProvider.value(
+      value: _employeeRepository,
+      child: MaterialApp.router(
+        theme: AppTheme.light,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        routerConfig: router,
       ),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      // Seat for `EmployeesPage`, which the composition root fills once the
-      // presentation layer exists. Empty until then rather than showing a
-      // placeholder screen no one asked for.
-      home: const Scaffold(),
     );
   }
 }
