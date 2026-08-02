@@ -39,6 +39,13 @@ void main() {
     });
 
     group('$FetchEmployeeRequested', () {
+      // Read through `props` rather than by comparing two equal instances:
+      // the event is const, so any two are canonicalised to the same object
+      // and `==` would short-circuit on identity.
+      test('has nothing to compare but its type', () {
+        expect(const FetchEmployeeRequested().props, isEmpty);
+      });
+
       blocTest<FetchEmployeeBloc, FetchEmployeeState>(
         'emits [loading, success] carrying the fetched $Employee',
         setUp: () {

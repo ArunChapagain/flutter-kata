@@ -114,6 +114,73 @@ void main() {
       expect(find.text('Something went wrong'), findsOneWidget);
     });
 
+    group('delete feedback', () {
+      const loaded = EmployeesState(
+        fetchState: FetchState(
+          status: FetchStatus.success,
+          employees: [arun, sam],
+        ),
+      );
+
+      testWidgets('shows a snackbar naming the employee that was deleted', (
+        tester,
+      ) async {
+        final deleted = loaded.copyWith(
+          deleteState: const DeleteState(
+            status: DeleteStatus.success,
+            deletedEmployee: arun,
+          ),
+        );
+        whenListen(
+          employeesBloc,
+          Stream.value(deleted),
+          initialState: loaded,
+        );
+
+        await tester.pumpApp(buildSubject());
+        await tester.pump();
+
+        expect(find.text('${arun.fullName} deleted'), findsOneWidget);
+      });
+
+      testWidgets('shows a snackbar when the delete fails', (tester) async {
+        final failed = loaded.copyWith(
+          deleteState: const DeleteState(status: DeleteStatus.failure),
+        );
+        whenListen(
+          employeesBloc,
+          Stream.value(failed),
+          initialState: loaded,
+        );
+
+        await tester.pumpApp(buildSubject());
+        await tester.pump();
+
+        expect(find.text('Failed to delete employee'), findsOneWidget);
+      });
+
+      testWidgets('stays quiet while the delete is still in flight', (
+        tester,
+      ) async {
+        final loading = loaded.copyWith(
+          deleteState: const DeleteState(
+            status: DeleteStatus.loading,
+            deletedEmployee: arun,
+          ),
+        );
+        whenListen(
+          employeesBloc,
+          Stream.value(loading),
+          initialState: loaded,
+        );
+
+        await tester.pumpApp(buildSubject());
+        await tester.pump();
+
+        expect(find.byType(SnackBar), findsNothing);
+      });
+    });
+
     group('search field', () {
       testWidgets('renders a search field when the list has loaded', (
         tester,

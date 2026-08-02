@@ -75,4 +75,39 @@ void main() {
       });
     });
   });
+
+  group(DeleteState, () {
+    const arun = Employee(
+      id: 'e1b9f0c4',
+      fullName: 'Arun Chapagai',
+      jobTitle: 'Software Engineer',
+      country: 'Nepal',
+      salary: Salary(5000050),
+    );
+
+    group('copyWith', () {
+      test('keeps the status it was not asked to replace', () {
+        const state = DeleteState(
+          status: DeleteStatus.success,
+          deletedEmployee: arun,
+        );
+
+        expect(state.copyWith(), equals(state));
+      });
+
+      test('replaces only the fields it is given', () {
+        const state = DeleteState(deletedEmployee: arun);
+
+        expect(
+          state.copyWith(status: DeleteStatus.failure),
+          equals(
+            const DeleteState(
+              status: DeleteStatus.failure,
+              deletedEmployee: arun,
+            ),
+          ),
+        );
+      });
+    });
+  });
 }

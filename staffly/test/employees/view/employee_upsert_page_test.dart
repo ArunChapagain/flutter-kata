@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:app_ui/app_ui.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:employee_repository/employee_repository.dart';
@@ -80,6 +82,34 @@ Future<void> _pumpView(
         child: const EmployeeUpsertView(),
       ),
     ),
+  );
+}
+
+/// Creates a [GoRouter] that opens straight onto the edit route, nested under
+/// a home route so that `context.pop()` has somewhere to go.
+GoRouter _editRouter({
+  required EmployeeRepository employeeRepository,
+  required String employeeId,
+}) {
+  return GoRouter(
+    initialLocation: '/upsert/$employeeId',
+    routes: [
+      GoRoute(
+        path: '/',
+        builder: (_, _) => const Scaffold(body: Text('Home')),
+        routes: [
+          GoRoute(
+            path: 'upsert/:employeeId',
+            builder: (_, state) => RepositoryProvider.value(
+              value: employeeRepository,
+              child: EmployeeUpsertPage(
+                employeeId: state.pathParameters['employeeId'],
+              ),
+            ),
+          ),
+        ],
+      ),
+    ],
   );
 }
 
@@ -224,6 +254,99 @@ void main() {
     );
   });
 
+  group('$EmployeeUpsertPage — edit flow', () {
+    late EmployeeRepository employeeRepository;
+
+    setUp(() {
+      employeeRepository = _MockEmployeeRepository();
+    });
+
+    Future<void> pumpEditFlow(WidgetTester tester) => tester.pumpRouted(
+      _editRouter(
+        employeeRepository: employeeRepository,
+        employeeId: _arun.id,
+      ),
+    );
+
+    group('while the employee is still being fetched', () {
+      setUp(() {
+        // A fetch that never completes keeps the page on its loading state.
+        when(() => employeeRepository.fetchEmployee(any())).thenAnswer(
+          (_) => Completer<Employee>().future,
+        );
+      });
+
+      testWidgets('shows a loading indicator under an "Edit Employee" bar', (
+        tester,
+      ) async {
+        await pumpEditFlow(tester);
+
+        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        expect(find.text('Edit Employee'), findsOneWidget);
+      });
+
+      testWidgets('the back button pops the page', (tester) async {
+        await pumpEditFlow(tester);
+
+        await tester.tap(find.byIcon(Icons.arrow_back_ios_new));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(EmployeeUpsertPage), findsNothing);
+        expect(find.text('Home'), findsOneWidget);
+      });
+    });
+
+    group('when the fetch fails', () {
+      setUp(() {
+        when(
+          () => employeeRepository.fetchEmployee(any()),
+        ).thenThrow(const EmployeeNotFoundException());
+      });
+
+      testWidgets('shows an error message instead of the form', (tester) async {
+        await pumpEditFlow(tester);
+        await tester.pumpAndSettle();
+
+        expect(find.text('Could not load employee.'), findsOneWidget);
+        expect(find.byType(EmployeeUpsertView), findsNothing);
+      });
+
+      testWidgets('Retry re-dispatches the fetch', (tester) async {
+        await pumpEditFlow(tester);
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Retry'));
+        await tester.pumpAndSettle();
+
+        // Once on open, once on retry.
+        verify(() => employeeRepository.fetchEmployee(_arun.id)).called(2);
+      });
+
+      testWidgets('the back button pops the page', (tester) async {
+        await pumpEditFlow(tester);
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byIcon(Icons.arrow_back_ios_new));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(EmployeeUpsertPage), findsNothing);
+        expect(find.text('Home'), findsOneWidget);
+      });
+    });
+
+    testWidgets('seeds the form once the employee arrives', (tester) async {
+      when(
+        () => employeeRepository.fetchEmployee(any()),
+      ).thenAnswer((_) async => _arun);
+
+      await pumpEditFlow(tester);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(EmployeeUpsertView), findsOneWidget);
+      expect(find.text(_arun.fullName), findsOneWidget);
+    });
+  });
+
   group('$EmployeeUpsertView', () {
     late EmployeeUpsertCubit cubit;
 
@@ -283,6 +406,44 @@ void main() {
         verify(() => cubit.countryChanged('Afghanistan')).called(1);
       },
     );
+
+    // ── Leaving without submitting ───────────────────────────────────────
+
+    testWidgets('the app bar back button pops the modal', (tester) async {
+      await _pumpView(tester, cubit);
+
+      await tester.tap(find.byIcon(Icons.arrow_back_ios_new));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(EmployeeUpsertView), findsNothing);
+    });
+
+    testWidgets('the Back button in the bottom bar pops the modal', (
+      tester,
+    ) async {
+      await _pumpView(tester, cubit);
+
+      await tester.tap(find.text('Back'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(EmployeeUpsertView), findsNothing);
+    });
+
+    testWidgets('the Back button is disabled while submitting', (tester) async {
+      when(() => cubit.state).thenReturn(
+        _validState.copyWith(status: FormzSubmissionStatus.inProgress),
+      );
+
+      await _pumpView(tester, cubit);
+
+      final backButton = tester.widget<TextButton>(
+        find.ancestor(
+          of: find.text('Back'),
+          matching: find.byType(TextButton),
+        ),
+      );
+      expect(backButton.onPressed, isNull);
+    });
 
     // ── Validation error surface ─────────────────────────────────────────
 

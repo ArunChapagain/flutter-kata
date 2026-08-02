@@ -3,7 +3,9 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:employee_repository/employee_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:staffly/app/routes/routes.dart';
 import 'package:staffly/employees/bloc/bloc.dart';
 import 'package:staffly/employees/widgets/widgets.dart';
 
@@ -109,6 +111,80 @@ void main() {
           () => employeesBloc.add(any()),
         );
       });
+    });
+
+    group('edit button', () {
+      late EmployeesBloc employeesBloc;
+
+      setUp(() {
+        employeesBloc = _MockEmployeesBloc();
+        when(() => employeesBloc.state).thenReturn(
+          const EmployeesState(
+            fetchState: FetchState(status: FetchStatus.success),
+          ),
+        );
+      });
+
+      // The edit route is stubbed rather than real: what is under test here is
+      // what the card does with the value the route pops, not the form.
+      GoRouter buildRouter({required bool? popValue}) => GoRouter(
+        initialLocation: Routes.home,
+        routes: [
+          GoRoute(
+            path: Routes.home,
+            builder: (_, _) => BlocProvider.value(
+              value: employeesBloc,
+              child: const Scaffold(
+                body: EmployeeCard(employee: employee),
+              ),
+            ),
+            routes: [
+              GoRoute(
+                path: 'upsert/:employeeId',
+                builder: (context, _) => Scaffold(
+                  body: TextButton(
+                    onPressed: () => context.pop(popValue),
+                    child: const Text('close'),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      );
+
+      testWidgets(
+        'dispatches $EmployeesFetchRequested when the edit screen '
+        'reports a change',
+        (tester) async {
+          await tester.pumpRouted(buildRouter(popValue: true));
+
+          await tester.tap(find.text('Edit'));
+          await tester.pumpAndSettle();
+
+          await tester.tap(find.text('close'));
+          await tester.pumpAndSettle();
+
+          verify(
+            () => employeesBloc.add(const EmployeesFetchRequested()),
+          ).called(1);
+        },
+      );
+
+      testWidgets(
+        'does not dispatch when the edit screen is dismissed unchanged',
+        (tester) async {
+          await tester.pumpRouted(buildRouter(popValue: null));
+
+          await tester.tap(find.text('Edit'));
+          await tester.pumpAndSettle();
+
+          await tester.tap(find.text('close'));
+          await tester.pumpAndSettle();
+
+          verifyNever(() => employeesBloc.add(any()));
+        },
+      );
     });
   });
 }
