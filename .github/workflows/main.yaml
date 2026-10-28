@@ -27,7 +27,7 @@ jobs:
         package:
           - employee_api
           - employee_repository
-    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/dart_package.yml@v1
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/dart_package.yml@v2
     with:
       run_bloc_lint: false
       working_directory: staffly/packages/${{ matrix.package }}
