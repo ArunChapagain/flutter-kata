@@ -14,7 +14,7 @@ on:
 
 jobs:
   build:
-    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@v1
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@v2
     with:
       flutter_version: "3.44.x"
       run_bloc_lint: true
@@ -35,7 +35,7 @@ jobs:
   # app_ui is the one package that needs the Flutter SDK, so it gets the
   # flutter_package workflow rather than joining the pure-Dart matrix above.
   app_ui:
-    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@v1
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@v2
     with:
       flutter_version: "3.44.x"
       run_bloc_lint: false
